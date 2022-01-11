@@ -1,26 +1,21 @@
 
-#[[tools]]
-#name = "sysbench"
-#path = "sysbench"
-#arguments = "--test=cpu --num-threads=<THREADS> --cpu-max-prime=20000 run"
-
 [[tools]]
 name = "bifrost"
-path = "../others/bifrost/build/src/Bifrost"
+path = "tools/Bifrost"
 arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_READS> <INPUT_FILES_SEQUENCES> -o <OUTPUT_FILE> --verbose --fasta"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
 
 [[tools]]
 name = "cuttlefish2-ref"
-path = "../others/cuttlefish2/build/src/cuttlefish"
+path = "tools/cuttlefish"
 arguments = "build --ref -l <INPUT_FILES_LIST> -k <KVALUE> -c <MULTIPLICITY> -t <THREADS> -o <OUTPUT_FILE>  -w <TEMP_DIR>"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
 
 [[tools]]
 name = "cuttlefish2-reads"
-path = "../others/cuttlefish2/build/src/cuttlefish"
+path = "tools/cuttlefish"
 arguments = "build --read -l <INPUT_FILES_LIST> -k <KVALUE> -c <MULTIPLICITY> -t <THREADS> -o <OUTPUT_FILE>  -w <TEMP_DIR>"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
@@ -28,7 +23,7 @@ sequences-arg-prefix = "-s"
 
 [[tools]]
 name = "bcalm"
-path = "../others/bcalm/build/bcalm"
+path = "tools/bcalm"
 arguments = "-in <INPUT_FILES_LIST> -kmer-size <KVALUE> -nb-cores <THREADS> -abundance-min <MULTIPLICITY> -out-tmp <TEMP_DIR> -out <OUTPUT_FILE>"
 
 [[tools]]
@@ -36,17 +31,41 @@ name = "biloki"
 path = "../biloki/target/release/BiLoki"
 arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE>"
 
+
+[[tools]]
+name = "biloki-ram"
+path = "../biloki/target/release/BiLoki"
+arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --prefer-memory"
+
+
+[[datasets]]
+name = "gut"
+lists = ["datasets/lists/gut.in"]
+
+
 [[datasets]]
 name = "chr14"
 files = [
-    "../data/Chr14/frag_1.fastq.gz",
-    "../data/Chr14/frag_2.fastq.gz",
+    "datasets/Chr14/frag_1.fastq.gz",
+    "datasets/Chr14/frag_2.fastq.gz",
 ]
 
 [[datasets]]
 name = "salmonella-1k"
-lists = ["../data/lists/salmonella-1k.in"]
+lists = ["datasets/lists/salmonella-1k.in"]
 
+
+[[benchmarks]]
+name = "gut-1"
+datasets = ["gut"]
+tools = ["biloki", "cuttlefish2-reads", "bcalm"]
+temp-dir = ".temp_dir"
+trim-before = true
+kvalues = [15, 31, 63]
+threads = [16]
+max-memory = 64
+min-multiplicity = 2
+size-check-time = 500
 
 [[benchmarks]]
 name = "chromosome-14"
@@ -56,7 +75,7 @@ temp-dir = ".temp_dir"
 trim-before = true
 kvalues = [3, 5, 7, 15, 23, 31, 63]
 threads = [16]
-max-memory = 128
+max-memory = 64
 min-multiplicity = 2
 size-check-time = 500
 
@@ -68,7 +87,7 @@ temp-dir = ".temp_dir"
 trim-before = true
 kvalues = [15, 31, 63]
 threads = [16]
-max-memory = 128
+max-memory = 64
 min-multiplicity = 1
 size-check-time = 500
 
