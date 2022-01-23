@@ -28,13 +28,13 @@ arguments = "-in <INPUT_FILES_LIST> -kmer-size <KVALUE> -nb-cores <THREADS> -abu
 
 [[tools]]
 name = "biloki"
-path = "../biloki/target/release/BiLoki"
+path = "tools/BiLoki"
 arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE>"
 
 
 [[tools]]
 name = "biloki-ram"
-path = "../biloki/target/release/BiLoki"
+path = "tools/BiLoki"
 arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --prefer-memory"
 
 
@@ -58,10 +58,10 @@ lists = ["datasets/lists/salmonella-1k.in"]
 [[benchmarks]]
 name = "gut-1"
 datasets = ["gut"]
-tools = ["biloki", "cuttlefish2-reads", "bcalm"]
+tools = ["cuttlefish2-reads", "biloki", "bcalm"]
 temp-dir = ".temp_dir"
 trim-before = true
-kvalues = [15, 31, 63]
+kvalues = [15, 63, 31]
 threads = [16]
 max-memory = 64
 min-multiplicity = 2
@@ -94,7 +94,7 @@ size-check-time = 500
 [[benchmarks]]
 name = "test1"
 datasets = ["chr14"]
-tools = ["cuttlefish2-reads", "biloki"]
+tools = ["cuttlefish2-reads", "biloki", "bifrost"]
 temp-dir = ".temp_dir"
 trim-before = true
 kvalues = [31, 63]

@@ -20,10 +20,23 @@ enum ExtendedCli {
     #[cfg(feature = "cpu-limit")]
     Start(StartOpt),
     Bench(Cli),
+    Canonicalize(CanonicalizeCli),
 }
 
 #[derive(StructOpt)]
 struct StartOpt {}
+
+#[derive(StructOpt)]
+struct CanonicalizeCli {
+    input: PathBuf,
+    output: PathBuf,
+
+    #[structopt(short, long)]
+    kval: usize,
+
+    #[structopt(short, long)]
+    force: bool,
+}
 
 #[derive(StructOpt)]
 struct Cli {
@@ -274,6 +287,13 @@ fn main() {
                     }
                 }
             }
+        }
+        ExtendedCli::Canonicalize(args) => {
+            if args.output.exists() && !args.force {
+                println!("File {} already exists!", args.output.display());
+            }
+
+            canonical_kmers::canonicalize(args.input, args.output, args.kval);
         }
     }
 }
