@@ -54,6 +54,22 @@ files = [
 name = "salmonella-1k"
 lists = ["datasets/lists/salmonella-1k.in"]
 
+[[datasets]]
+name = "father"
+lists = ["/tmp/father-list.in"]
+
+[[benchmarks]]
+name = "human-ramdisk"
+datasets = ["father"]
+tools = ["cuttlefish2-reads", "biloki"]
+temp-dir = ".temp_dir"
+trim-before = true
+kvalues = [15, 63, 31]
+threads = [128]
+max-memory = 64
+min-multiplicity = 2
+size-check-time = 500
+
 
 [[benchmarks]]
 name = "gut-1"

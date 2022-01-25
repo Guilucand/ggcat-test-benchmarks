@@ -173,8 +173,8 @@ fn main() {
 
             for dataset in datasets {
                 for thread in &experiment.threads {
-                    for tool in &tools {
-                        for kval in &experiment.kvalues {
+                    for kval in &experiment.kvalues {
+                        for tool in &tools {
                             let results_file = args.results_dir.join(&format!(
                                 "{}@K{}_{}_{}thr-info.json",
                                 dataset.name, kval, tool.name, thread
