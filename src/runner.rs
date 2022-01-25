@@ -266,6 +266,7 @@ impl Runner {
                 &mut rusage as *mut libc::rusage,
             );
         }
+        let total_seconds = start_time.elapsed().as_secs_f64();
 
         is_finished.store(true, Ordering::Relaxed);
         maximum_disk_usage_thread.join();
@@ -299,7 +300,7 @@ impl Runner {
                 + (rusage.ru_utime.tv_usec as f64 / 1000000.0),
             system_time_secs: rusage.ru_stime.tv_sec as f64
                 + (rusage.ru_stime.tv_usec as f64 / 1000000.0),
-            real_time_secs: start_time.elapsed().as_secs_f64(),
+            real_time_secs: total_seconds,
             total_written_gb: rusage.ru_oublock as f64 / 2048.0 / 1024.0,
             total_read_gb: rusage.ru_inblock as f64 / 2048.0 / 1024.0,
             max_used_disk_gb: maximum_disk_usage.load(Ordering::Relaxed) as f64
