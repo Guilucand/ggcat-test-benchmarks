@@ -15,6 +15,12 @@ pub struct Tool {
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct WorkingDir {
+    pub name: String,
+    pub path: PathBuf,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Dataset {
     pub name: String,
     pub files: Option<Vec<PathBuf>>,
@@ -26,8 +32,10 @@ pub struct Benchmark {
     pub name: String,
     pub datasets: Vec<String>,
     pub tools: Vec<String>,
-    #[serde(rename = "temp-dir")]
-    pub temp_dir: PathBuf,
+    #[serde(rename = "working-dirs")]
+    pub working_dirs: Vec<String>,
+    #[serde(rename = "copy-dataset")]
+    pub copy_dataset: bool,
     #[serde(rename = "trim-before")]
     pub trim_before: bool,
     pub kvalues: Vec<usize>,
@@ -45,4 +53,6 @@ pub struct Config {
     pub tools: Vec<Tool>,
     pub datasets: Vec<Dataset>,
     pub benchmarks: Vec<Benchmark>,
+    #[serde(rename = "working-dirs")]
+    pub working_dirs: Vec<WorkingDir>,
 }

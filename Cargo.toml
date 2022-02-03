@@ -19,6 +19,10 @@ systemstat = "0.1.8"
 toml = "0.5.8"
 walkdir = "2.3.2"
 canonical-kmers = { path = "canonical-kmers" }
+fs_extra = "1.2.0"
+ctrlc = "3.2.1"
+backtrace = "0.3.64"
+parking_lot = "0.12.0"
 
 
 [features]

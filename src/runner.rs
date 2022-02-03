@@ -72,9 +72,15 @@ impl Runner {
     pub fn run_tool(
         base_dir: impl AsRef<Path>,
         tool: Tool,
-        dataset: Dataset,
+        dataset_name: String,
+        input_files: &Vec<PathBuf>,
         parameters: Parameters,
     ) -> RunResults {
+        let input_files_string = input_files
+            .iter()
+            .map(|f| f.as_os_str().to_str().unwrap().to_string())
+            .collect::<Vec<String>>();
+
         // Acquire a handle for the cgroup hierarchy.
         #[cfg(feature = "cpu-limit")]
         let cg: Cgroup = {
@@ -95,39 +101,11 @@ impl Runner {
                 .build(hier)
         };
 
-        let mut input_files: Vec<_> = dataset
-            .files
-            .unwrap_or(Vec::new())
-            .iter()
-            .map(|x| {
-                let path = if x.is_absolute() {
-                    x.clone()
-                } else {
-                    base_dir.as_ref().join(x)
-                };
-                path.to_str().unwrap().to_string()
-            })
-            .collect();
-
-        if let Some(lists) = dataset.lists {
-            for list in lists {
-                let list = if list.is_absolute() {
-                    list
-                } else {
-                    base_dir.as_ref().join(list)
-                };
-
-                for line in BufReader::new(File::open(list).unwrap()).lines() {
-                    input_files.push(line.unwrap());
-                }
-            }
-        }
-
         let input_files_list_file_name =
-            std::env::temp_dir().join(format!("input-files-{}.in", dataset.name));
+            std::env::temp_dir().join(format!("input-files-{}.in", dataset_name));
         {
             let mut input_files_list = File::create(&input_files_list_file_name).unwrap();
-            input_files_list.write_all(input_files.join("\n").as_bytes());
+            input_files_list.write_all(input_files_string.join("\n").as_bytes());
             input_files_list.write_all(b"\n");
         }
 
@@ -135,7 +113,7 @@ impl Runner {
             ("<THREADS>", vec![parameters.max_threads.to_string()]),
             ("<KVALUE>", vec![parameters.k.to_string()]),
             ("<MULTIPLICITY>", vec![parameters.multiplicity.to_string()]),
-            ("<INPUT_FILES>", input_files.clone()),
+            ("<INPUT_FILES>", input_files_string.clone()),
             (
                 "<INPUT_FILES_LIST>",
                 vec![input_files_list_file_name.to_str().unwrap().to_string()],
@@ -143,7 +121,7 @@ impl Runner {
             ("<INPUT_FILES_READS>", {
                 if let Some(reads_prefix) = tool.reads_arg_prefix {
                     if parameters.multiplicity == 1 {
-                        input_files
+                        input_files_string
                             .iter()
                             .map(|x| vec![reads_prefix.clone(), x.clone()])
                             .flatten()
@@ -158,7 +136,7 @@ impl Runner {
             ("<INPUT_FILES_SEQUENCES>", {
                 if let Some(sequences_prefix) = tool.sequences_arg_prefix {
                     if parameters.multiplicity >= 2 {
-                        input_files
+                        input_files_string
                             .iter()
                             .map(|x| vec![sequences_prefix.clone(), x.clone()])
                             .flatten()
@@ -217,7 +195,7 @@ impl Runner {
 
         println!(
             "Running tool {} with dataset {} K = {} threads = {}",
-            &tool.name, &dataset.name, parameters.k, parameters.max_threads
+            &tool.name, &dataset_name, parameters.k, parameters.max_threads
         );
         eprintln!("{} {}", tool_path.display(), arguments.join(" "));
 
