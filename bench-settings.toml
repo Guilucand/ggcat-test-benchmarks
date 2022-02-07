@@ -29,13 +29,13 @@ arguments = "-in <INPUT_FILES_LIST> -kmer-size <KVALUE> -nb-cores <THREADS> -abu
 
 [[tools]]
 name = "biloki"
-path = "tools/BiLoki"
+path = "tools/biloki"
 arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE>"
 
 
 [[tools]]
 name = "biloki-ram"
-path = "tools/BiLoki"
+path = "tools/biloki"
 arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --prefer-memory"
 
 
@@ -44,24 +44,37 @@ name = "gut"
 lists = ["datasets/lists/gut.in"]
 
 
-[[datasets]]
-name = "chr14"
-files = [
-    "datasets/Chr14/frag_1.fastq.gz",
-    "datasets/Chr14/frag_2.fastq.gz",
-]
+# [[datasets]]
+# name = "chr14"
+# files = [
+#     "datasets/Chr14/frag_1.fastq.gz",
+#     "datasets/Chr14/frag_2.fastq.gz",
+# ]
 
-[[datasets]]
-name = "salmonella-1k"
-lists = ["datasets/lists/salmonella-1k.in"]
+# [[datasets]]
+# name = "salmonella-1k"
+# lists = ["datasets/lists/salmonella-1k.in"]
 
 [[datasets]]
 name = "father"
-lists = ["/tmp/father-list.in"]
+lists = ["datasets/lists/father.in"]
 
 [[working-dirs]]
 name = "ram"
 path = "/tmp/benchmark-workdir"
+
+[[benchmarks]]
+name = "gut"
+datasets = ["gut"]
+tools = ["cuttlefish2-reads", "biloki"]
+working-dirs = ["ram"]
+copy-dataset = true
+trim-before = true
+kvalues = [15, 31, 63]
+threads = [16]
+max-memory = 256
+min-multiplicity = 2
+size-check-time = 500
 
 [[benchmarks]]
 name = "human"
@@ -70,61 +83,34 @@ tools = ["cuttlefish2-reads", "biloki"]
 working-dirs = ["ram"]
 copy-dataset = true
 trim-before = true
-kvalues = [15, 63, 31]
-threads = [128]
-max-memory = 64
-min-multiplicity = 2
-size-check-time = 500
-
-
-[[benchmarks]]
-name = "gut"
-datasets = ["gut"]
-tools = ["cuttlefish2-reads", "biloki", "bcalm"]
-working-dirs = ["ram"]
-copy-dataset = true
-trim-before = true
-kvalues = [15, 63, 31]
-threads = [16]
-max-memory = 64
-min-multiplicity = 2
-size-check-time = 500
-
-[[benchmarks]]
-name = "chromosome-14"
-datasets = ["chr14"]
-tools = ["biloki", "cuttlefish2-reads", "bcalm"] # , "bifrost"]
-working-dirs = ["ram"]
-copy-dataset = true
-trim-before = true
-kvalues = [3, 5, 7, 15, 23, 31, 63]
-threads = [16]
-max-memory = 64
-min-multiplicity = 2
-size-check-time = 500
-
-[[benchmarks]]
-name = "salmonella-1k"
-datasets = ["salmonella-1k"]
-tools = ["biloki", "cuttlefish2-ref", "bcalm"] # , "bifrost"]
-working-dirs = ["ram"]
-copy-dataset = true
-trim-before = true
 kvalues = [15, 31, 63]
-threads = [16]
-max-memory = 64
-min-multiplicity = 1
-size-check-time = 500
-
-[[benchmarks]]
-name = "test1"
-datasets = ["chr14"]
-tools = ["cuttlefish2-reads", "biloki", "bifrost"]
-working-dirs = ["ram"]
-copy-dataset = true
-trim-before = true
-kvalues = [31, 63]
-threads = [16]
-max-memory = 8
+threads = [32]
+max-memory = 256
 min-multiplicity = 2
-size-check-time = 500
+size-check-time = 750
+
+# [[benchmarks]]
+# name = "chromosome-14"
+# datasets = ["chr14"]
+# tools = ["biloki", "cuttlefish2-reads"] # "bcalm"] # , "bifrost"]
+# working-dirs = ["ram"]
+# copy-dataset = true
+# trim-before = true
+# kvalues = [3, 5, 7, 15, 23, 31, 63]
+# threads = [16]
+# max-memory = 64
+# min-multiplicity = 2
+# size-check-time = 500
+
+# [[benchmarks]]
+# name = "salmonella-1k"
+# datasets = ["salmonella-1k"]
+# tools = ["biloki", "cuttlefish2-ref", "bcalm"] # , "bifrost"]
+# working-dirs = ["ram"]
+# copy-dataset = true
+# trim-before = true
+# kvalues = [15, 31, 63]
+# threads = [16]
+# max-memory = 64
+# min-multiplicity = 1
+# size-check-time = 500
