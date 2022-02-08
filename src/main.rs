@@ -244,30 +244,7 @@ fn main() {
                         }
                     }
 
-                    let input_files = if experiment.copy_dataset {
-                        let mut new_input_files = Vec::new();
-
-                        let dataset_dir = tmp_workdir.as_ref().join("dataset");
-                        create_dir(&dataset_dir);
-
-                        for file in input_files {
-                            let name = Path::new(&file).file_name().unwrap();
-
-                            let new_file = dataset_dir.join(name);
-
-                            std::fs::copy(&file, &new_file).expect(&format!(
-                                "Cannot copy file: {} to working dir {}",
-                                file.display(),
-                                new_file.display()
-                            ));
-
-                            new_input_files.push(new_file);
-                        }
-
-                        new_input_files
-                    } else {
-                        input_files
-                    };
+                    let mut dataset_copied = false;
 
                     for thread in &experiment.threads {
                         for kval in &experiment.kvalues {
@@ -283,6 +260,31 @@ fn main() {
                                         results_file.file_name().unwrap().to_str().unwrap()
                                     );
                                     continue;
+                                }
+
+                                if !dataset_copied && experiment.copy_dataset {
+                                    dataset_copied = true;
+
+                                    let mut new_input_files = Vec::new();
+
+                                    let dataset_dir = tmp_workdir.as_ref().join("dataset");
+                                    create_dir(&dataset_dir);
+
+                                    for file in input_files {
+                                        let name = Path::new(&file).file_name().unwrap();
+
+                                        let new_file = dataset_dir.join(name);
+
+                                        std::fs::copy(&file, &new_file).expect(&format!(
+                                            "Cannot copy file: {} to working dir {}",
+                                            file.display(),
+                                            new_file.display()
+                                        ));
+
+                                        new_input_files.push(new_file);
+                                    }
+
+                                    input_files = new_input_files
                                 }
 
                                 let temp_dir = tmp_workdir.as_ref().join(&format!(
