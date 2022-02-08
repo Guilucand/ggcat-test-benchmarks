@@ -1,10 +1,12 @@
 pub mod config;
 mod dir_cleanup;
 pub mod runner;
+mod table_maker;
 
 use crate::config::Config;
 use crate::dir_cleanup::{create_dir_with_guard, remove_dirs_on_panic};
 use crate::runner::{Parameters, RunResults, Runner};
+use crate::table_maker::{make_table, TableMakerCli};
 use cgroups_rs::cgroup_builder::CgroupBuilder;
 use cgroups_rs::Cgroup;
 use std::env::current_dir;
@@ -24,6 +26,7 @@ enum ExtendedCli {
     #[cfg(feature = "cpu-limit")]
     Start(StartOpt),
     Bench(Cli),
+    MakeTable(TableMakerCli),
     Canonicalize(CanonicalizeCli),
 }
 
@@ -70,9 +73,7 @@ fn main() {
             "Thread panicked at location: {:?}",
             info.location()
         );
-        // if let Some(message) = info.message() {
-        //     let _ = writeln!(err_lock, "Error message: {}", message);
-        // }
+        let _ = writeln!(err_lock, "Error message: {}", info.to_string());
         if let Some(s) = info.payload().downcast_ref::<&str>() {
             let _ = writeln!(err_lock, "Panic payload: {:?}", s);
         }
@@ -244,7 +245,40 @@ fn main() {
                         }
                     }
 
+                    if let Some(limit) = dataset.limit {
+                        input_files.truncate(limit);
+                    }
+
+                    if dataset.tar.is_some() && !experiment.copy_dataset {
+                        println!("Warning: tar datasets must be copied to workdir (set copy-dataset = true)");
+                        continue;
+                    }
+
                     let mut dataset_copied = false;
+                    let dataset_dir = tmp_workdir.as_ref().join("dataset");
+                    create_dir(&dataset_dir);
+
+                    if let Some(tarball) = &dataset.tar {
+                        for entry in tar::Archive::new(File::open(tarball).unwrap())
+                            .entries()
+                            .unwrap()
+                            .take(
+                                dataset
+                                    .limit
+                                    .map(|limit| limit - input_files.len())
+                                    .unwrap_or(usize::MAX),
+                            )
+                        {
+                            let mut entry = entry.unwrap();
+                            let tmp_path = entry.path().unwrap();
+                            let file_name = tmp_path.file_name().unwrap();
+
+                            let dest_file = dataset_dir.join(file_name);
+
+                            entry.unpack(&dest_file).unwrap();
+                            input_files.push(dest_file);
+                        }
+                    }
 
                     for thread in &experiment.threads {
                         for kval in &experiment.kvalues {
@@ -267,21 +301,22 @@ fn main() {
 
                                     let mut new_input_files = Vec::new();
 
-                                    let dataset_dir = tmp_workdir.as_ref().join("dataset");
-                                    create_dir(&dataset_dir);
-
                                     for file in input_files {
                                         let name = Path::new(&file).file_name().unwrap();
 
                                         let new_file = dataset_dir.join(name);
+                                        new_input_files.push(new_file.clone());
+
+                                        if new_file == file {
+                                            // Skip files already in dest dir
+                                            continue;
+                                        }
 
                                         std::fs::copy(&file, &new_file).expect(&format!(
                                             "Cannot copy file: {} to working dir {}",
                                             file.display(),
                                             new_file.display()
                                         ));
-
-                                        new_input_files.push(new_file);
                                     }
 
                                     input_files = new_input_files
@@ -407,5 +442,6 @@ fn main() {
 
             canonical_kmers::canonicalize(args.input, args.output, args.kval);
         }
+        ExtendedCli::MakeTable(args) => make_table(args),
     }
 }

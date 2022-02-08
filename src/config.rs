@@ -25,6 +25,8 @@ pub struct Dataset {
     pub name: String,
     pub files: Option<Vec<PathBuf>>,
     pub lists: Option<Vec<PathBuf>>,
+    pub tar: Option<PathBuf>,
+    pub limit: Option<usize>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
