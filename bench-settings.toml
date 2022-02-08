@@ -59,6 +59,17 @@ lists = ["datasets/lists/gut.in"]
 name = "father"
 lists = ["datasets/lists/father.in"]
 
+[[datasets]]
+name = "mother"
+lists = ["datasets/lists/mother.in"]
+
+[[datasets]]
+name = "human-dbjs"
+files = [
+    "datasets/human-dbjs/father.fa",
+    "datasets/human-dbjs/mother.fa",
+]
+
 [[working-dirs]]
 name = "ram"
 path = "/tmp/benchmark-workdir"
@@ -78,7 +89,7 @@ size-check-time = 500
 
 [[benchmarks]]
 name = "human"
-datasets = ["father"]
+datasets = ["father", "mother"]
 tools = ["cuttlefish2-reads", "biloki"]
 working-dirs = ["ram"]
 copy-dataset = true
@@ -87,6 +98,20 @@ kvalues = [15, 31, 63]
 threads = [32]
 max-memory = 256
 min-multiplicity = 2
+size-check-time = 750
+
+
+[[benchmarks]]
+name = "human-reassemble"
+datasets = ["human-dbjs"]
+tools = ["cuttlefish2-ref", "biloki"]
+working-dirs = ["ram"]
+copy-dataset = true
+trim-before = true
+kvalues = [15, 31, 63]
+threads = [32]
+max-memory = 256
+min-multiplicity = 1
 size-check-time = 750
 
 # [[benchmarks]]

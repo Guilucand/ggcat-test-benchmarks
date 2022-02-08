@@ -4,3 +4,4 @@ export LD_LIBRARY_PATH=/wrk/users/acracco/biloki-test/assemblers-benchmark/build
 
 cargo run --release -- bench gut gut-bench-results
 cargo run --release -- bench human human-bench-results
+cargo run --release -- bench human-reassemble human-reassemble-bench-results
