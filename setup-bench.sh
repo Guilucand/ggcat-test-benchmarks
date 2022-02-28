@@ -32,7 +32,6 @@ pushd building/
 
 
     pushd cuttlefish2/
-        git checkout develop
         mkdir build
         cd build
         cmake ..
