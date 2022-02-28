@@ -12,7 +12,7 @@ pushd building/
     git clone https://github.com/COMBINE-lab/cuttlefish cuttlefish2
 
     pushd biloki/
-        cargo build --release
+        cargo build --release --features build-links
     popd
 
     pushd bcalm/
