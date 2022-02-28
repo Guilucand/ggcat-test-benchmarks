@@ -51,6 +51,43 @@ struct Cli {
     results_path: PathBuf,
     #[structopt(short, long, default_value = "bench-settings.toml")]
     settings_file: PathBuf,
+    #[structopt(long)]
+    include: Option<String>,
+    #[structopt(long)]
+    exclude: Option<String>,
+    #[structopt(long)]
+    threads: Option<String>,
+}
+
+fn filter_options<T>(
+    name: &str,
+    options: Vec<T>,
+    mapper: fn(&T) -> &String,
+    include: &Vec<String>,
+    exclude: &Vec<String>,
+) -> Vec<T> {
+    let include_matches = options.iter().any(|x| include.contains(mapper(x)));
+    let exclude_matches = options.iter().any(|x| exclude.contains(mapper(x)));
+
+    if include_matches && exclude_matches {
+        println!(
+            "Warning: both includes and excludes match on parameter: {}",
+            name
+        );
+    }
+
+    options
+        .into_iter()
+        .filter(|x| {
+            if include_matches {
+                include.contains(mapper(x))
+            } else if exclude_matches {
+                !exclude.contains(mapper(x))
+            } else {
+                true
+            }
+        })
+        .collect()
 }
 
 fn main() {
@@ -174,34 +211,61 @@ fn main() {
                 res.unwrap()
             };
 
-            let datasets = experiment
-                .datasets
-                .iter()
-                .map(|x| {
-                    settings
-                        .datasets
-                        .iter()
-                        .filter(|d| &d.name == x)
-                        .next()
-                        .expect(&format!("Cannot find a dataset with name '{}'", x))
-                })
-                .collect::<Vec<_>>();
+            let include = args
+                .include
+                .map(|i| i.split(",").map(|x| x.to_string()).collect::<Vec<_>>());
+            let exclude = args
+                .exclude
+                .map(|i| i.split(",").map(|x| x.to_string()).collect::<Vec<_>>());
 
-            let tools = experiment
-                .tools
-                .iter()
-                .map(|x| {
-                    settings
-                        .tools
-                        .iter()
-                        .filter(|t| &t.name == x)
-                        .next()
-                        .expect(&format!("Cannot find a tool with name '{}'", x))
-                })
-                .collect::<Vec<_>>();
+            let datasets = filter_options(
+                "datasets",
+                experiment
+                    .datasets
+                    .iter()
+                    .map(|x| {
+                        settings
+                            .datasets
+                            .iter()
+                            .filter(|d| &d.name == x)
+                            .next()
+                            .expect(&format!("Cannot find a dataset with name '{}'", x))
+                    })
+                    .collect::<Vec<_>>(),
+                |d| &d.name,
+                include.as_ref().unwrap_or(&vec![]),
+                exclude.as_ref().unwrap_or(&vec![]),
+            );
+
+            let tools = filter_options(
+                "tools",
+                experiment
+                    .tools
+                    .iter()
+                    .map(|x| {
+                        settings
+                            .tools
+                            .iter()
+                            .filter(|t| &t.name == x)
+                            .next()
+                            .expect(&format!("Cannot find a tool with name '{}'", x))
+                    })
+                    .collect::<Vec<_>>(),
+                |t| &t.name,
+                include.as_ref().unwrap_or(&vec![]),
+                exclude.as_ref().unwrap_or(&vec![]),
+            );
+
+            let mut working_dirs = filter_options(
+                "working dirs",
+                experiment.working_dirs,
+                |x| &x,
+                include.as_ref().unwrap_or(&vec![]),
+                exclude.as_ref().unwrap_or(&vec![]),
+            );
 
             for dataset in datasets {
-                for working_dir in &experiment.working_dirs {
+                for working_dir in &working_dirs {
                     let working_dir = settings
                         .working_dirs
                         .iter()
@@ -211,9 +275,15 @@ fn main() {
                             &format!("Cannot find a working dir named: {}", &working_dir).clone(),
                         );
 
-                    let tmp_workdir = create_dir_with_guard(&working_dir.path).expect(&format!(
+                    let working_path = if working_dir.path.is_absolute() {
+                        working_dir.path.clone()
+                    } else {
+                        base_dir.join(&working_dir.path)
+                    };
+
+                    let tmp_workdir = create_dir_with_guard(&working_path).expect(&format!(
                         "Cannot create working dir: {}",
-                        working_dir.path.display()
+                        working_path.display()
                     ));
 
                     let mut input_files: Vec<_> = dataset
@@ -280,7 +350,13 @@ fn main() {
                         }
                     }
 
-                    for thread in &experiment.threads {
+                    let threads = if let Some(threads) = &args.threads {
+                        threads.split(",").map(|t| t.parse().unwrap()).collect()
+                    } else {
+                        experiment.threads.clone()
+                    };
+
+                    for thread in &threads {
                         for kval in &experiment.kvalues {
                             for tool in &tools {
                                 let results_file = results_dir.join(&format!(
