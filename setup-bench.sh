@@ -39,7 +39,7 @@ pushd building/
     popd
 popd
 
-cp building/biloki/target/release/BiLoki tools/
+cp building/biloki/target/release/biloki tools/
 cp building/bifrost/build/src/Bifrost tools/
 cp building/bcalm/build/bcalm tools/
 cp building/cuttlefish2/build/src/cuttlefish tools/
