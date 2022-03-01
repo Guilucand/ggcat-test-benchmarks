@@ -32,6 +32,10 @@ name = "biloki"
 path = "tools/biloki"
 arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE>"
 
+[[tools]]
+name = "biloki-links"
+path = "tools/biloki-links"
+arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE>"
 
 [[tools]]
 name = "biloki-ram"
@@ -105,7 +109,7 @@ path = "working-dirs/vakka/benchmark-workdir"
 [[benchmarks]]
 name = "gut"
 datasets = ["gut"]
-tools = ["cuttlefish2-reads", "bcalm", "biloki"]
+tools = ["cuttlefish2-reads", "bcalm", "biloki", "biloki-links"]
 working-dirs = ["ram", "vakka", "ssd", "hdd"]
 copy-dataset = true
 trim-before = true
@@ -118,7 +122,7 @@ size-check-time = 500
 [[benchmarks]]
 name = "human"
 datasets = ["father", "mother"]
-tools = ["cuttlefish2-reads", "bcalm", "biloki"]
+tools = ["cuttlefish2-reads", "bcalm", "biloki", "biloki-links"]
 working-dirs = ["ram", "vakka", "ssd", "hdd"]
 copy-dataset = true
 trim-before = true
@@ -132,7 +136,7 @@ size-check-time = 750
 [[benchmarks]]
 name = "human-reassemble"
 datasets = ["human-dbjs"]
-tools = ["cuttlefish2-ref", "bcalm", "biloki"]
+tools = ["cuttlefish2-ref", "bcalm", "biloki", "biloki-links"]
 working-dirs = ["ram", "vakka", "ssd", "hdd"]
 copy-dataset = true
 trim-before = true
@@ -145,7 +149,7 @@ size-check-time = 750
 # [[benchmarks]]
 # name = "chromosome-14"
 # datasets = ["chr14"]
-# tools = ["biloki", "cuttlefish2-reads"] # "bcalm"] # , "bifrost"]
+# tools = ["biloki", "biloki-links, "cuttlefish2-reads"] # "bcalm"] # , "bifrost"]
 # working-dirs = ["ram", "vakka", " "ssdh,dd"]
 # copy-dataset = true
 # trim-before = true
@@ -158,7 +162,7 @@ size-check-time = 750
  [[benchmarks]]
  name = "salmonella-small"
  datasets = ["salmonella-1k", "salmonella-10k", "salmonella-100k"]
- tools = ["biloki", "bcalm", "cuttlefish2-ref"]
+ tools = ["biloki", "biloki-links", "bcalm", "cuttlefish2-ref"]
  working-dirs = ["ram", "vakka", "ssd", "hdd"]
  copy-dataset = true
  trim-before = true
@@ -171,7 +175,7 @@ size-check-time = 750
 [[benchmarks]]
 name = "salmonella-big"
 datasets = ["salmonella-100k", "salmonella-all"]
-tools = ["biloki", "cuttlefish2-ref"]
+tools = ["biloki", "biloki-links", "cuttlefish2-ref"]
 working-dirs = ["vakka", "hdd"]
 copy-dataset = true
 trim-before = true

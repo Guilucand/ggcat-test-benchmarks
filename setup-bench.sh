@@ -12,10 +12,15 @@ pushd building/
     git clone https://github.com/COMBINE-lab/cuttlefish cuttlefish2
 
     pushd biloki/
-        cargo build --release --features build-links
+        git pull
+        cargo build --release --features "process-stats"
+        cp ./target/release/biloki ../../tools/biloki
+        cargo build --release --features "build-links,process-stats"
+        cp ./target/release/biloki ../../tools/biloki-links
     popd
 
     pushd bcalm/
+        git pull
         mkdir build
         cd build
         cmake ..
@@ -23,6 +28,7 @@ pushd building/
     popd
 
     pushd bifrost/
+        git pull
         mkdir build
         cd build
         cmake ..
@@ -32,6 +38,7 @@ pushd building/
 
 
     pushd cuttlefish2/
+        git pull
         mkdir build
         cd build
         cmake ..
@@ -39,7 +46,6 @@ pushd building/
     popd
 popd
 
-cp building/biloki/target/release/biloki tools/
 cp building/bifrost/build/src/Bifrost tools/
 cp building/bcalm/build/bcalm tools/
 cp building/cuttlefish2/build/src/cuttlefish tools/
