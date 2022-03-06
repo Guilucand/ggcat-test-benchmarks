@@ -89,6 +89,10 @@ files = [
     "datasets/human-dbjs/mother.fa",
 ]
 
+[[datasets]]
+name = "mtest"
+files = ["datasets/human-giab/mother/D3_S1_L001_R1_001.fastq.gz"]
+
 [[working-dirs]]
 name = "ram"
 path = "working-dirs/ram/benchmark-workdir"
@@ -105,6 +109,19 @@ path = "working-dirs/ssd/benchmark-workdir"
 name = "vakka"
 path = "working-dirs/vakka/benchmark-workdir"
 
+
+[[benchmarks]]
+name = "mtest"
+datasets = ["mtest"]
+tools = ["biloki"] # , "biloki-links"]
+working-dirs = ["hdd"]
+copy-dataset = true
+trim-before = true
+kvalues = [15, 31, 63]
+threads = [12]
+max-memory = 256
+min-multiplicity = 2
+size-check-time = 500
 
 [[benchmarks]]
 name = "gut"
