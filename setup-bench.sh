@@ -15,8 +15,8 @@ pushd building/
         git pull
         cargo build --release --features "process-stats"
         cp ./target/release/biloki ../../tools/biloki
-        cargo build --release --features "build-links,process-stats"
-        cp ./target/release/biloki ../../tools/biloki-links
+        # cargo build --release --features "build-links,process-stats"
+        # cp ./target/release/biloki ../../tools/biloki-links
     popd
 
     pushd bcalm/
