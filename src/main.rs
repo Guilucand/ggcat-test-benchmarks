@@ -332,6 +332,10 @@ fn main() {
                         for entry in tar::Archive::new(File::open(tarball).unwrap())
                             .entries()
                             .unwrap()
+                            .filter(|d| {
+                                d.is_ok()
+                                    && d.as_ref().unwrap().path().unwrap().extension().is_some()
+                            })
                             .take(
                                 dataset
                                     .limit
