@@ -486,20 +486,22 @@ fn main() {
                                     },
                                 );
 
-                                remove_dir_all(&temp_dir);
+                                if !experiment.keep_temp.unwrap_or(false) {
+                                    remove_dir_all(&temp_dir).unwrap();
+                                }
 
                                 let final_out_dir = outputs_dir.join(&format!(
                                     "{}_{}_K{}_{}_T{}thr_out",
                                     dataset.name, working_dir.name, kval, tool.name, thread
                                 ));
-                                create_dir_all(&final_out_dir);
+                                create_dir_all(&final_out_dir).unwrap();
 
                                 for file in read_dir(&out_dir).unwrap() {
                                     let file = file.unwrap();
 
                                     let name = file.file_name();
-                                    std::fs::copy(file.path(), final_out_dir.join(name));
-                                    std::fs::remove_file(file.path());
+                                    std::fs::copy(file.path(), final_out_dir.join(name)).unwrap();
+                                    std::fs::remove_file(file.path()).unwrap();
                                 }
                                 remove_dir_all(&out_dir);
 

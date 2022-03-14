@@ -40,6 +40,8 @@ pub struct Benchmark {
     pub copy_dataset: bool,
     #[serde(rename = "trim-before")]
     pub trim_before: bool,
+    #[serde(rename = "keep-temp")]
+    pub keep_temp: Option<bool>,
     pub kvalues: Vec<usize>,
     pub threads: Vec<usize>,
     #[serde(rename = "max-memory")]
