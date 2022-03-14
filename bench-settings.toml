@@ -1,36 +1,36 @@
 
 [[tools]]
 name = "bifrost"
-path = "tools/Bifrost"
-arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_READS> <INPUT_FILES_SEQUENCES> -o <OUTPUT_FILE> --verbose --fasta"
+path = "/usr/bin/time"
+arguments = "-v tools/Bifrost build -k <KVALUE> -t <THREADS>  <INPUT_FILES_READS> <INPUT_FILES_SEQUENCES> -o <OUTPUT_FILE> --verbose --fasta"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
 # suggested-memory-prefix = "-m"
 
 [[tools]]
 name = "cuttlefish2-ref"
-path = "tools/cuttlefish"
-arguments = "build --ref -l <INPUT_FILES_LIST> -k <KVALUE> -c <MULTIPLICITY> -t <THREADS> -o <OUTPUT_FILE>  -w <TEMP_DIR>"
+path = "/usr/bin/time"
+arguments = "-v tools/cuttlefish build --ref -l <INPUT_FILES_LIST> -k <KVALUE> -c <MULTIPLICITY> -t <THREADS> -o <OUTPUT_FILE>  -w <TEMP_DIR>"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
 
 [[tools]]
 name = "cuttlefish2-reads"
-path = "tools/cuttlefish"
-arguments = "build --read -l <INPUT_FILES_LIST> -k <KVALUE> -c <MULTIPLICITY> -t <THREADS> -o <OUTPUT_FILE>  -w <TEMP_DIR>"
+path = "/usr/bin/time"
+arguments = "-v tools/cuttlefish build --read -l <INPUT_FILES_LIST> -k <KVALUE> -c <MULTIPLICITY> -t <THREADS> -o <OUTPUT_FILE>  -w <TEMP_DIR>"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
 
 
 [[tools]]
 name = "bcalm"
-path = "tools/bcalm"
-arguments = "-in <INPUT_FILES_LIST> -kmer-size <KVALUE> -nb-cores <THREADS> -abundance-min <MULTIPLICITY> -out-tmp <TEMP_DIR> -out <OUTPUT_FILE>"
+path = "/usr/bin/time"
+arguments = "-v tools/bcalm -in <INPUT_FILES_LIST> -kmer-size <KVALUE> -nb-cores <THREADS> -abundance-min <MULTIPLICITY> -out-tmp <TEMP_DIR> -out <OUTPUT_FILE>"
 
 [[tools]]
 name = "biloki"
-path = "tools/biloki"
-arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE>"
+path = "/usr/bin/time"
+arguments = "-v tools/biloki build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --keep-temp-files"
 
 # [[tools]]
 # name = "biloki-links"
@@ -39,8 +39,8 @@ arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LI
 
 [[tools]]
 name = "biloki-ram"
-path = "tools/biloki"
-arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --prefer-memory"
+path = "/usr/bin/time"
+arguments = "-v tools/biloki build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --prefer-memory"
 
 
 [[datasets]]
@@ -141,10 +141,10 @@ name = "human"
 datasets = ["father", "mother"]
 tools = ["cuttlefish2-reads", "bcalm", "biloki"] # , "biloki-links"]
 working-dirs = ["ram", "vakka", "ssd", "hdd"]
-copy-dataset = true
+copy-dataset = false
 trim-before = true
-kvalues = [15, 31, 63]
-threads = [32]
+kvalues = [15]
+threads = [12]
 max-memory = 256
 min-multiplicity = 2
 size-check-time = 750
@@ -179,7 +179,7 @@ size-check-time = 750
  [[benchmarks]]
  name = "salmonella-small"
  datasets = ["salmonella-1k", "salmonella-10k", "salmonella-100k"]
- tools = ["biloki", "biloki-links", "bcalm", "cuttlefish2-ref"]
+ tools = ["biloki", "bcalm", "cuttlefish2-ref"]
  working-dirs = ["ram", "vakka", "ssd", "hdd"]
  copy-dataset = true
  trim-before = true
@@ -192,7 +192,7 @@ size-check-time = 750
 [[benchmarks]]
 name = "salmonella-big"
 datasets = ["salmonella-100k", "salmonella-all"]
-tools = ["biloki", "biloki-links", "cuttlefish2-ref"]
+tools = ["biloki", "cuttlefish2-ref"]
 working-dirs = ["vakka", "hdd"]
 copy-dataset = true
 trim-before = true
