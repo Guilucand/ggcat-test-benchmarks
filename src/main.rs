@@ -285,6 +285,7 @@ fn main() {
                         "Cannot create working dir: {}",
                         working_path.display()
                     ));
+                    let mut keep_temp_dir = false;
 
                     let mut input_files: Vec<_> = dataset
                         .files
@@ -488,6 +489,8 @@ fn main() {
 
                                 if !experiment.keep_temp.unwrap_or(false) {
                                     remove_dir_all(&temp_dir).unwrap();
+                                } else {
+                                    keep_temp_dir = true;
                                 }
 
                                 let final_out_dir = outputs_dir.join(&format!(
@@ -513,6 +516,9 @@ fn main() {
                                     .unwrap();
                             }
                         }
+                    }
+                    if keep_temp_dir {
+                        std::mem::forget(tmp_workdir);
                     }
                 }
             }
