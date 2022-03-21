@@ -2,6 +2,7 @@ use crate::config::{Dataset, Tool};
 use fork::Fork;
 use rlimit::Resource;
 
+use crate::stats::get_process_info;
 use cgroups_rs::cgroup_builder::*;
 use cgroups_rs::*;
 use serde::{Deserialize, Serialize};
@@ -38,6 +39,7 @@ pub struct Parameters {
 pub struct RunResults {
     command_line: String,
     max_memory_gb: f64,
+    max_measured_memory_gb: f64,
     user_time_secs: f64,
     system_time_secs: f64,
     real_time_secs: f64,
@@ -208,6 +210,8 @@ impl Runner {
 
         let is_finished = Arc::new(AtomicBool::new(false));
 
+        let pid = command.id();
+
         let is_finished_thr = is_finished.clone();
         let temp_dir_thr = parameters.temp_dir.clone();
         let out_dir_thr = PathBuf::from(&parameters.output_file)
@@ -216,12 +220,19 @@ impl Runner {
             .to_path_buf();
 
         let maximum_disk_usage = Arc::new(AtomicU64::new(0));
+        let maximum_rss_usage = Arc::new(AtomicU64::new(0));
 
         let maximum_disk_usage_thr = maximum_disk_usage.clone();
+        let maximum_rss_usage_thr = maximum_rss_usage.clone();
+
         let maximum_disk_usage_thread = std::thread::spawn(move || {
             while !is_finished_thr.load(Ordering::Relaxed) {
                 maximum_disk_usage_thr.fetch_max(
                     get_dir_size(&temp_dir_thr) + get_dir_size(&out_dir_thr),
+                    Ordering::Relaxed,
+                );
+                maximum_rss_usage_thr.fetch_max(
+                    get_process_info(pid).unwrap().memory_usage_bytes,
                     Ordering::Relaxed,
                 );
                 std::thread::sleep(parameters.size_check_time);
@@ -274,6 +285,8 @@ impl Runner {
         RunResults {
             command_line: format!("{} {}", tool_path.display(), arguments.join(" ")),
             max_memory_gb: rusage.ru_maxrss as f64 / (1024.0 * 1024.0),
+            max_measured_memory_gb: maximum_rss_usage.load(Ordering::Relaxed) as f64
+                / (1024.0 * 1024.0),
             user_time_secs: rusage.ru_utime.tv_sec as f64
                 + (rusage.ru_utime.tv_usec as f64 / 1000000.0),
             system_time_secs: rusage.ru_stime.tv_sec as f64

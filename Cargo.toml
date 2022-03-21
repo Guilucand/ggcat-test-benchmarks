@@ -24,6 +24,7 @@ ctrlc = "3.2.1"
 backtrace = "0.3.64"
 parking_lot = "0.12.0"
 tar = "0.4.38"
+procfs = "0.12.0"
 
 
 [features]

@@ -1,6 +1,7 @@
 pub mod config;
 mod dir_cleanup;
 pub mod runner;
+mod stats;
 mod table_maker;
 
 use crate::config::Config;
