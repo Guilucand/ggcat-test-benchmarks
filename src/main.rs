@@ -489,7 +489,7 @@ fn main() {
                                 );
 
                                 if !experiment.keep_temp.unwrap_or(false) {
-                                    remove_dir_all(&temp_dir).unwrap();
+                                    remove_dir_all(&temp_dir);
                                 } else {
                                     keep_temp_dir = true;
                                 }
