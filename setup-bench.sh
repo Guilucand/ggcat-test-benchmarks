@@ -14,7 +14,7 @@ pushd building/
     pushd biloki/
         git pull
         cargo build --release --features "process-stats"
-        cp ./target/release/biloki ../../tools/biloki
+        cp ./target/release/biloki ../../tools/biloki -f
         # cargo build --release --features "build-links,process-stats"
         # cp ./target/release/biloki ../../tools/biloki-links
     popd
@@ -46,6 +46,6 @@ pushd building/
     popd
 popd
 
-cp building/bifrost/build/src/Bifrost tools/
-cp building/bcalm/build/bcalm tools/
-cp building/cuttlefish2/build/src/cuttlefish tools/
+cp building/bifrost/build/src/Bifrost tools/ -f
+cp building/bcalm/build/bcalm tools/ -f
+cp building/cuttlefish2/build/src/cuttlefish tools/ -f
