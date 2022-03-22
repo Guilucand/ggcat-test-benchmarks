@@ -201,6 +201,14 @@ impl Runner {
         );
         eprintln!("{} {}", tool_path.display(), arguments.join(" "));
 
+        // Reset the max_rss for the current process
+        {
+            File::options().write(true).open("/proc/self/clear_refs").map(|mut f| {
+                f.write(b"5");
+                f.flush();
+            }).unwrap_or(());
+        }
+
         let mut command = std::process::Command::new(&tool_path)
             .args(arguments.as_slice())
             .stdout(File::create(&parameters.log_file).unwrap())
@@ -232,7 +240,7 @@ impl Runner {
                     Ordering::Relaxed,
                 );
                 maximum_rss_usage_thr.fetch_max(
-                    get_process_info(pid).unwrap().memory_usage_bytes,
+                    get_process_info(pid).map(|x| x.memory_usage_bytes).unwrap_or(0),
                     Ordering::Relaxed,
                 );
                 std::thread::sleep(parameters.size_check_time);
