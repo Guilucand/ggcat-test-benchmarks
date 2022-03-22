@@ -1,36 +1,36 @@
 
 [[tools]]
 name = "bifrost"
-path = "/usr/bin/time"
-arguments = "-v tools/Bifrost build -k <KVALUE> -t <THREADS>  <INPUT_FILES_READS> <INPUT_FILES_SEQUENCES> -o <OUTPUT_FILE> --verbose --fasta"
+path = "tools/Bifrost"
+arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_READS> <INPUT_FILES_SEQUENCES> -o <OUTPUT_FILE> --verbose --fasta"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
 # suggested-memory-prefix = "-m"
 
 [[tools]]
 name = "cuttlefish2-ref"
-path = "/usr/bin/time"
-arguments = "-v tools/cuttlefish build --ref -l <INPUT_FILES_LIST> -k <KVALUE> -c <MULTIPLICITY> -t <THREADS> -o <OUTPUT_FILE>  -w <TEMP_DIR>"
+path = "tools/cuttlefish"
+arguments = "build --ref -l <INPUT_FILES_LIST> -k <KVALUE> -c <MULTIPLICITY> -t <THREADS> -o <OUTPUT_FILE>  -w <TEMP_DIR>"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
 
 [[tools]]
 name = "cuttlefish2-reads"
-path = "/usr/bin/time"
-arguments = "-v tools/cuttlefish build --read -l <INPUT_FILES_LIST> -k <KVALUE> -c <MULTIPLICITY> -t <THREADS> -o <OUTPUT_FILE>  -w <TEMP_DIR>"
+path = "tools/cuttlefish"
+arguments = "build --read -l <INPUT_FILES_LIST> -k <KVALUE> -c <MULTIPLICITY> -t <THREADS> -o <OUTPUT_FILE>  -w <TEMP_DIR>"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
 
 
 [[tools]]
 name = "bcalm"
-path = "/usr/bin/time"
-arguments = "-v tools/bcalm -in <INPUT_FILES_LIST> -kmer-size <KVALUE> -nb-cores <THREADS> -abundance-min <MULTIPLICITY> -out-tmp <TEMP_DIR> -out <OUTPUT_FILE>"
+path = "tools/bcalm"
+arguments = "-in <INPUT_FILES_LIST> -kmer-size <KVALUE> -nb-cores <THREADS> -abundance-min <MULTIPLICITY> -out-tmp <TEMP_DIR> -out <OUTPUT_FILE>"
 
 [[tools]]
 name = "biloki"
-path = "/usr/bin/time"
-arguments = "-v tools/biloki build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --keep-temp-files"
+path = "tools/biloki"
+arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --keep-temp-files"
 
 # [[tools]]
 # name = "biloki-links"
@@ -39,8 +39,8 @@ arguments = "-v tools/biloki build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l
 
 [[tools]]
 name = "biloki-ram"
-path = "/usr/bin/time"
-arguments = "-v tools/biloki build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --prefer-memory"
+path = "tools/biloki"
+arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --prefer-memory"
 
 
 [[datasets]]
