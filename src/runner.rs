@@ -37,15 +37,15 @@ pub struct Parameters {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RunResults {
-    command_line: String,
-    max_memory_gb: f64,
-    max_measured_memory_gb: f64,
-    user_time_secs: f64,
-    system_time_secs: f64,
-    real_time_secs: f64,
-    total_written_gb: f64,
-    total_read_gb: f64,
-    max_used_disk_gb: f64,
+    pub command_line: String,
+    pub max_memory_gb: f64,
+    pub max_measured_memory_gb: f64,
+    pub user_time_secs: f64,
+    pub system_time_secs: f64,
+    pub real_time_secs: f64,
+    pub total_written_gb: f64,
+    pub total_read_gb: f64,
+    pub max_used_disk_gb: f64,
 }
 
 fn absolute_path(path: impl AsRef<Path>) -> io::Result<PathBuf> {
@@ -203,10 +203,14 @@ impl Runner {
 
         // Reset the max_rss for the current process
         {
-            File::options().write(true).open("/proc/self/clear_refs").map(|mut f| {
-                f.write(b"5");
-                f.flush();
-            }).unwrap_or(());
+            File::options()
+                .write(true)
+                .open("/proc/self/clear_refs")
+                .map(|mut f| {
+                    f.write(b"5");
+                    f.flush();
+                })
+                .unwrap_or(());
         }
 
         let mut command = std::process::Command::new(&tool_path)
@@ -240,7 +244,9 @@ impl Runner {
                     Ordering::Relaxed,
                 );
                 maximum_rss_usage_thr.fetch_max(
-                    get_process_info(pid).map(|x| x.memory_usage_bytes).unwrap_or(0),
+                    get_process_info(pid)
+                        .map(|x| x.memory_usage_bytes)
+                        .unwrap_or(0),
                     Ordering::Relaxed,
                 );
                 std::thread::sleep(parameters.size_check_time);
