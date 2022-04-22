@@ -170,6 +170,7 @@ pub fn make_table(args: TableMakerCli) {
                 .join(&format!("{}_{}_K{}_{}_T{}thr_out", dataset, wdir, k, tool, threads))).map(|content| {
                 let mut is_completed = false;
                 for file in content.files {
+                    println!("File: {}", file);
                     if file.starts_with("canonical") {
                         is_completed = true;
                     }
