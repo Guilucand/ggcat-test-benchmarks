@@ -139,7 +139,7 @@ pub fn make_table(args: TableMakerCli) {
 
     let mut table_maker = LatexTableMaker::new();
 
-    let target_dataset = "salmonella-10k";
+    let target_dataset = args.filter;//"salmonella-10k";
 
     for file in content.files {
         if !file.ends_with("info.json") {
