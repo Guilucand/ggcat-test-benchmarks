@@ -56,6 +56,9 @@ impl LatexTableMaker {
 
         let col_count = self.col_labels.len();
 
+        buffer.push_str("\\begin{figure}\n");
+        buffer.push_str("\\centering\n");
+
         buffer.push_str(&{
             let mut col_def = String::from(r#"\begin{tabular}{ |c||c"#);
             for _ in 0..(col_count - 1) {
@@ -64,13 +67,13 @@ impl LatexTableMaker {
             col_def.push_str("| }\n");
             col_def
         });
-        buffer.push_str("\\hline\n");
-        buffer.push_str(&format!(
-            "\\multicolumn{{{}}}{{|c|}}{{{}}}\\\\\n",
-            col_count + 1,
-            title
-        ));
-        buffer.push_str("\\hline\n");
+        // buffer.push_str("\\hline\n");
+        // buffer.push_str(&format!(
+        //     "\\multicolumn{{{}}}{{|c|}}{{{}}}\\\\\n",
+        //     col_count + 1,
+        //     title
+        // ));
+        // buffer.push_str("\\hline\n");
         buffer.push_str("\\hline\n");
         buffer.push_str(&{
             let mut col_names = String::from(r#"Tool/K"#);
@@ -106,6 +109,12 @@ impl LatexTableMaker {
             buffer.push_str("\\hline\n");
         }
         buffer.push_str(r#"\end{tabular}"#);
+
+
+        buffer.push_str(&format!("\\caption{}\n", title));
+        // buffer.push_str("\\label{fig:my_label}\n");
+        buffer.push_str("\\end{figure}\n");
+
         // Afghanistan   & AF    &AFG&   004\\
         // Aland Islands&   AX  & ALA   &248\\
         // Albania &AL & ALB&  008\\
@@ -155,13 +164,34 @@ pub fn make_table(args: TableMakerCli) {
 
         let results: RunResults = serde_json::from_reader(File::open(&file).unwrap()).unwrap();
 
+
+        let is_completed = {
+            let content = fs_extra::dir::get_dir_content(args.results_dir.join("outputs-dir")
+                .join(&format!("{}-{}_K{}_{}_T{}thr_out", dataset, wdir, k, tool, threads))).unwrap();
+
+            let mut is_completed = false;
+            for file in content.files {
+                if file.starts_with("canonical") {
+                    is_completed = true;
+                }
+            }
+
+            is_completed
+        };
+
         table_maker.add_sample(
             &k.to_string(),
             tool,
-            (
-                format!("{:.2}s", results.real_time_secs),
-                Some(format!("{:.2}gb", results.max_memory_gb)),
-            ),
+            if is_completed {
+                (
+                    format!("{:.2}s", results.real_time_secs),
+                    Some(format!("{:.2}gb", results.max_memory_gb)),
+                )
+            } else {
+                (
+                    "crashed".to_string(), None
+                )
+            },
         );
 
         println!(
