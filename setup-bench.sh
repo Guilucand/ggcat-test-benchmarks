@@ -6,17 +6,17 @@ mkdir tools/
 
 pushd building/
 
-    git clone https://github.com/Guilucand/biloki --recursive
+    git clone https://github.com/Guilucand/ggcat --recursive
     git clone https://github.com/GATB/bcalm --recursive
     git clone https://github.com/pmelsted/bifrost
     git clone https://github.com/COMBINE-lab/cuttlefish cuttlefish2
 
-    pushd biloki/
+    pushd ggcat/
         git pull
         cargo build --release --features "process-stats"
-        cp ./target/release/biloki ../../tools/biloki -f
+        cp ./target/release/ggcat ../../tools/ggcat -f
         # cargo build --release --features "build-links,process-stats"
-        # cp ./target/release/biloki ../../tools/biloki-links
+        # cp ./target/release/ggcat ../../tools/ggcat-links
     popd
 
     pushd bcalm/

@@ -6,11 +6,11 @@ mkdir tools/
 
 pushd building/
 
-    pushd biloki/
+    pushd ggcat/
         git pull
         cargo build --release --features "process-stats"
-        cp ./target/release/biloki ../../tools/biloki -f
+        cp ./target/release/ggcat ../../tools/ggcat -f
         # cargo build --release --features "build-links,process-stats"
-        # cp ./target/release/biloki ../../tools/biloki-links
+        # cp ./target/release/ggcat ../../tools/ggcat-links
     popd
 popd
