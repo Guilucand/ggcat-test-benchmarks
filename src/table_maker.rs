@@ -111,7 +111,7 @@ impl LatexTableMaker {
         buffer.push_str(r#"\end{tabular}"#);
 
 
-        buffer.push_str(&format!("\\caption{}\n", title));
+        buffer.push_str(&format!("\\caption{{{}}}\n", title));
         // buffer.push_str("\\label{fig:my_label}\n");
         buffer.push_str("\\end{figure}\n");
 
