@@ -166,9 +166,8 @@ pub fn make_table(args: TableMakerCli) {
 
 
         let is_completed = {
-            println!("Dir: {}", format!("{}-{}_K{}_{}_T{}thr_out", dataset, wdir, k, tool, threads));
             fs_extra::dir::get_dir_content(args.results_dir.join("outputs-dir")
-                .join(&format!("{}-{}_K{}_{}_T{}thr_out", dataset, wdir, k, tool, threads))).map(|content| {
+                .join(&format!("{}_{}_K{}_{}_T{}thr_out", dataset, wdir, k, tool, threads))).map(|content| {
                 let mut is_completed = false;
                 for file in content.files {
                     if file.starts_with("canonical") {
