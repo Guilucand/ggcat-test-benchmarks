@@ -135,11 +135,13 @@ impl LatexTableMaker {
 */
 
 pub fn make_table(args: TableMakerCli) {
-    let content = fs_extra::dir::get_dir_content(args.results_dir.join("results-dir")).unwrap();
+    let mut content = fs_extra::dir::get_dir_content(args.results_dir.join("results-dir")).unwrap();
 
     let mut table_maker = LatexTableMaker::new();
 
     let target_dataset = args.filter;//"salmonella-10k";
+
+    content.files.sort();
 
     for file in content.files {
         if !file.ends_with("info.json") {
