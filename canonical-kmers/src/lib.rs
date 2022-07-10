@@ -3,12 +3,11 @@ use std::collections::VecDeque;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io;
-use std::io::{BufRead, Read, Write};
+use std::io::{Read, Write};
 use std::iter::FromIterator;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::exit;
 use std::sync::atomic::{AtomicU64, Ordering};
-use structopt::StructOpt;
 
 fn read_lines<'a, P>(
     filename: P,

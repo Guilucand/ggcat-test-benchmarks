@@ -53,10 +53,25 @@ pub struct Benchmark {
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct Tools {
+    pub tools: Vec<Tool>,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct LocalConfig {
+    pub datasets: Vec<Dataset>,
+    #[serde(rename = "working-dirs")]
+    pub working_dirs: Vec<WorkingDir>,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct BenchmarksConfig {
+    pub benchmarks: Vec<Benchmark>,
+}
+
 pub struct Config {
     pub tools: Vec<Tool>,
     pub datasets: Vec<Dataset>,
     pub benchmarks: Vec<Benchmark>,
-    #[serde(rename = "working-dirs")]
     pub working_dirs: Vec<WorkingDir>,
 }

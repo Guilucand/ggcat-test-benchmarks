@@ -46,6 +46,7 @@ pub struct RunResults {
     pub total_written_gb: f64,
     pub total_read_gb: f64,
     pub max_used_disk_gb: f64,
+    pub has_completed: bool,
 }
 
 fn absolute_path(path: impl AsRef<Path>) -> io::Result<PathBuf> {
@@ -292,8 +293,11 @@ impl Runner {
             result
         };
 
+        let mut has_completed = false;
+
         if let Some(result) = output_result {
             canonical_kmers::canonicalize(&result, parameters.canonical_file, parameters.k);
+            has_completed = true;
         }
 
         RunResults {
@@ -310,6 +314,7 @@ impl Runner {
             total_read_gb: rusage.ru_inblock as f64 / 2048.0 / 1024.0,
             max_used_disk_gb: maximum_disk_usage.load(Ordering::Relaxed) as f64
                 / (1024.0 * 1024.0 * 1024.0),
+            has_completed,
         }
     }
 }

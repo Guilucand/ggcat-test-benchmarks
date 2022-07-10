@@ -1,15 +1,18 @@
+#![allow(warnings)]
 pub mod config;
 mod dir_cleanup;
 pub mod runner;
 mod stats;
 mod table_maker;
 
-use crate::config::Config;
+use crate::config::{BenchmarksConfig, Config, LocalConfig, Tools};
 use crate::dir_cleanup::{create_dir_with_guard, remove_dirs_on_panic};
 use crate::runner::{Parameters, RunResults, Runner};
 use crate::table_maker::{make_table, TableMakerCli};
 use cgroups_rs::cgroup_builder::CgroupBuilder;
 use cgroups_rs::Cgroup;
+use serde::de::DeserializeOwned;
+use serde::Deserialize;
 use std::env::current_dir;
 use std::ffi::CString;
 use std::fs::{create_dir, create_dir_all, read_dir, remove_dir_all, File};
@@ -50,8 +53,12 @@ struct CanonicalizeCli {
 struct Cli {
     test_name: String,
     results_path: PathBuf,
-    #[structopt(short, long, default_value = "bench-settings.toml")]
-    settings_file: PathBuf,
+    #[structopt(short, long, default_value = "config/benchmarks.toml")]
+    benchmarks_config: PathBuf,
+    #[structopt(short, long, default_value = "config/tools.toml")]
+    tools_config: PathBuf,
+    #[structopt(short, long, default_value = "config/local.toml")]
+    env_config: PathBuf,
     #[structopt(long)]
     include: Option<String>,
     #[structopt(long)]
@@ -148,38 +155,60 @@ fn main() {
             }
         }
         ExtendedCli::Bench(args) => {
-            let mut settings_file = File::open(&args.settings_file).unwrap();
+            let mut all_settings: Config = Config {
+                tools: vec![],
+                datasets: vec![],
+                benchmarks: vec![],
+                working_dirs: vec![],
+            };
 
-            let base_dir = if args.settings_file.is_absolute() {
-                args.settings_file.parent().unwrap().to_path_buf()
+            let base_dir = if args.env_config.is_absolute() {
+                args.env_config.parent().unwrap().to_path_buf()
             } else {
                 current_dir()
                     .unwrap()
-                    .join(&args.settings_file)
+                    .join(&args.env_config)
                     .parent()
                     .unwrap()
                     .to_path_buf()
             };
 
-            let mut settings_text = String::new();
+            fn parse_toml<T: DeserializeOwned>(file: PathBuf) -> T {
+                let mut settings_text = String::new();
+                File::open(&file)
+                    .unwrap()
+                    .read_to_string(&mut settings_text)
+                    .unwrap();
+                toml::from_str(&settings_text).unwrap()
+            }
 
-            settings_file.read_to_string(&mut settings_text).unwrap();
+            all_settings
+                .tools
+                .extend(parse_toml::<Tools>(args.tools_config).tools.into_iter());
+            all_settings.benchmarks.extend(
+                parse_toml::<BenchmarksConfig>(args.benchmarks_config)
+                    .benchmarks
+                    .into_iter(),
+            );
+            let local_env = parse_toml::<LocalConfig>(args.env_config);
+            all_settings
+                .working_dirs
+                .extend(local_env.working_dirs.into_iter());
+            all_settings.datasets.extend(local_env.datasets.into_iter());
 
             let results_dir = args.results_path.join("results-dir");
             let outputs_dir = args.results_path.join("outputs-dir");
             let logs_dir = args.results_path.join("logs-dir");
 
-            std::fs::create_dir_all(&results_dir);
-            std::fs::create_dir_all(&outputs_dir);
-            std::fs::create_dir_all(&logs_dir);
-
-            let settings: Config = toml::from_str(&settings_text).unwrap();
+            let _ = create_dir_all(&results_dir);
+            let _ = create_dir_all(&outputs_dir);
+            let _ = create_dir_all(&logs_dir);
 
             let experiment = {
                 let mut res = None;
                 let mut multiple_choices = Vec::new();
 
-                for bench in &settings.benchmarks {
+                for bench in &all_settings.benchmarks {
                     if bench.name == args.test_name {
                         res = Some(bench.clone());
                     } else if bench.name.starts_with(&args.test_name) {
@@ -196,7 +225,7 @@ fn main() {
                 if res.is_none() {
                     println!("Cannot find a benchmark matching \"{}\"!", args.test_name);
                     println!("Available benchmarks:");
-                    for bench in settings.benchmarks {
+                    for bench in all_settings.benchmarks {
                         println!("\t{}", &bench.name);
                     }
                     return;
@@ -225,7 +254,7 @@ fn main() {
                     .datasets
                     .iter()
                     .map(|x| {
-                        settings
+                        all_settings
                             .datasets
                             .iter()
                             .filter(|d| &d.name == x)
@@ -244,7 +273,7 @@ fn main() {
                     .tools
                     .iter()
                     .map(|x| {
-                        settings
+                        all_settings
                             .tools
                             .iter()
                             .filter(|t| &t.name == x)
@@ -267,7 +296,7 @@ fn main() {
 
             for dataset in datasets {
                 for working_dir in &working_dirs {
-                    let working_dir = settings
+                    let working_dir = all_settings
                         .working_dirs
                         .iter()
                         .filter(|w| &w.name == working_dir)
