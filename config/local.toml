@@ -2,36 +2,43 @@
 [[datasets]]
 name = "salmonella-10"
 tar = "/abga/work/acracco/ggcat-test/datasets/salmonella-strains.tar"
+copy-dataset = true
 limit = 10
 
 [[datasets]]
 name = "salmonella-1k"
 tar = "/abga/work/acracco/ggcat-test/datasets/salmonella-strains.tar"
+copy-dataset = true
 limit = 1000
 
 [[datasets]]
 name = "salmonella-5k"
 tar = "/abga/work/acracco/ggcat-test/datasets/salmonella-strains.tar"
+copy-dataset = true
 limit = 5000
 
 [[datasets]]
 name = "salmonella-10k"
 tar = "/abga/work/acracco/ggcat-test/datasets/salmonella-strains.tar"
+copy-dataset = true
 limit = 10000
 
 [[datasets]]
 name = "salmonella-50k"
 tar = "/abga/work/acracco/ggcat-test/datasets/salmonella-strains.tar"
+copy-dataset = true
 limit = 50000
 
 [[datasets]]
 name = "salmonella-100k"
 tar = "/abga/work/acracco/ggcat-test/datasets/salmonella-strains.tar"
+copy-dataset = true
 limit = 100000
 
 [[datasets]]
 name = "salmonella-all"
 tar = "/abga/work/acracco/ggcat-test/datasets/salmonella-strains.tar"
+copy-dataset = true
 
 [[datasets]]
 name = "father"
