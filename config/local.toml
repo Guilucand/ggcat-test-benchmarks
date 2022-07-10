@@ -1,74 +1,66 @@
-[[datasets]]
-name = "salmonella-10"
-lists = ["/home/andrea/genome-assembly/data/lists/salmonella-1k.in"]
-limit = 10
-
-[[datasets]]
-name = "salmonella-100"
-lists = ["/home/andrea/genome-assembly/data/lists/salmonella-1k.in"]
-limit = 100
 
 [[datasets]]
 name = "salmonella-1k"
-lists = ["/home/andrea/genome-assembly/data/lists/salmonella-1k.in"]
+tar = "/abga/work/acracco/ggcat-test/datasets/salmonella-strains.tar"
+limit = 1000
 
 [[datasets]]
 name = "salmonella-5k"
-lists = ["/home/andrea/genome-assembly/data/lists/salmonella-5k.in"]
+tar = "/abga/work/acracco/ggcat-test/datasets/salmonella-strains.tar"
+limit = 5000
 
 [[datasets]]
 name = "salmonella-10k"
-lists = ["/home/andrea/genome-assembly/data/lists/salmonella-10k.in"]
+tar = "/abga/work/acracco/ggcat-test/datasets/salmonella-strains.tar"
+limit = 10000
 
 [[datasets]]
 name = "salmonella-50k"
-lists = ["/home/andrea/genome-assembly/data/lists/salmonella-50k.in"]
+tar = "/abga/work/acracco/ggcat-test/datasets/salmonella-strains.tar"
+limit = 50000
 
 [[datasets]]
 name = "salmonella-100k"
-lists = ["/home/andrea/genome-assembly/data/lists/salmonella-50k.in"]
+tar = "/abga/work/acracco/ggcat-test/datasets/salmonella-strains.tar"
+limit = 100000
 
 [[datasets]]
 name = "salmonella-all"
-tar = "../datasets/salmonella-strains.tar"
+tar = "/abga/work/acracco/ggcat-test/datasets/salmonella-strains.tar"
 
 [[datasets]]
 name = "father"
-lists = ["../datasets/lists/father.in"]
+lists = ["/abga/work/acracco/ggcat-test/datasets/lists/father.in"]
 
 [[datasets]]
 name = "mother"
-lists = ["../datasets/lists/mother.in"]
+lists = ["/abga/work/acracco/ggcat-test/datasets/lists/mother.in"]
 
-[[datasets]]
-name = "human-dbjs"
-files = [
-    "../datasets/human-dbjs/father.fa",
-    "../datasets/human-dbjs/mother.fa",
-]
-
-[[datasets]]
-name = "mtest"
-files = ["../datasets/human-giab/mother/D3_S1_L001_R1_001.fastq.gz"]
+# [[datasets]]
+# name = "human-dbjs"
+# files = [
+#     "/abga/work/acracco/ggcat-test/datasets/human-dbjs/father.fa",
+#     "/abga/work/acracco/ggcat-test/datasets/human-dbjs/mother.fa",
+# ]
 
 
 [[datasets]]
 name = "gut"
-lists = ["../datasets/lists/gut.in"]
+lists = ["/abga/work/acracco/ggcat-test/datasets/lists/gut.in"]
 
 
-[[working-dirs]]
-name = "ram"
-path = "../working-dirs/ram/benchmark-workdir"
+# [[working-dirs]]
+# name = "ram"
+# path = "../working-dirs/ram/benchmark-workdir"
 
-[[working-dirs]]
-name = "hdd"
-path = "../working-dirs/hdd/benchmark-workdir"
+# [[working-dirs]]
+# name = "hdd"
+# path = "../working-dirs/hdd/benchmark-workdir"
 
 [[working-dirs]]
 name = "ssd"
-path = "../working-dirs/ssd/benchmark-workdir"
+path = "/abga/work/acracco/ggcat-test/benchmark-workdir"
 
-[[working-dirs]]
-name = "vakka"
-path = "../working-dirs/vakka/benchmark-workdir"
+# [[working-dirs]]
+# name = "vakka"
+# path = "../working-dirs/vakka/benchmark-workdir"
