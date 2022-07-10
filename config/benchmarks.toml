@@ -14,6 +14,20 @@ size-check-time = 1000
 
 
 [[benchmarks]]
+name = "article-experiment-1"
+datasets = ["salmonella-10k", "salmonella-100k"]
+tools = ["cuttlefish2-ref", "ggcat"]
+working-dirs = ["ssd"]
+copy-dataset = false
+trim-before = true
+kvalues = [27, 63]
+threads = [32]
+max-memory = 32
+min-multiplicity = 1
+size-check-time = 500
+
+
+[[benchmarks]]
 name = "default-salmonella-all"
 datasets = ["salmonella-1k", "salmonella-5k", "salmonella-10k", "salmonella-50k", "salmonella-100k"]
 tools = ["cuttlefish2-ref", "ggcat"]
