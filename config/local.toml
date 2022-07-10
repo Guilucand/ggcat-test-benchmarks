@@ -1,5 +1,10 @@
 
 [[datasets]]
+name = "salmonella-10"
+tar = "/abga/work/acracco/ggcat-test/datasets/salmonella-strains.tar"
+limit = 10
+
+[[datasets]]
 name = "salmonella-1k"
 tar = "/abga/work/acracco/ggcat-test/datasets/salmonella-strains.tar"
 limit = 1000
