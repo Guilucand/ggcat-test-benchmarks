@@ -12,6 +12,9 @@ pub struct Tool {
     pub reads_arg_prefix: Option<String>,
     #[serde(rename = "sequences-arg-prefix")]
     pub sequences_arg_prefix: Option<String>,
+
+    #[serde(rename = "use-prefix-for-list")]
+    pub use_prefix_for_list: Option<bool>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

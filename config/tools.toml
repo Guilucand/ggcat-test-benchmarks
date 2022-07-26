@@ -1,24 +1,24 @@
 [[tools]]
 name = "bifrost"
 path = "../tools/Bifrost"
-arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_READS> <INPUT_FILES_SEQUENCES> -o <OUTPUT_FILE> --verbose --fasta"
+arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_LIST> -o <OUTPUT_FILE> --verbose --fasta"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
+use-prefix-for-list = true
 # suggested-memory-prefix = "-m"
 
 [[tools]]
 name = "bifrost-colored"
 path = "../tools/Bifrost"
-arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_READS> <INPUT_FILES_SEQUENCES> -o <OUTPUT_FILE> --verbose --fasta -c"
+arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_LIST> -o <OUTPUT_FILE> --verbose --fasta -c"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
+use-prefix-for-list = true
 
 [[tools]]
 name = "cuttlefish2-ref"
 path = "../tools/cuttlefish"
 arguments = "build --ref -l <INPUT_FILES_LIST> -k <KVALUE> -c <MULTIPLICITY> -t <THREADS> -o <OUTPUT_FILE>  -w <TEMP_DIR>"
-reads-arg-prefix = "-r"
-sequences-arg-prefix = "-s"
 
 [[tools]]
 name = "cuttlefish2-reads"
@@ -42,11 +42,6 @@ arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LI
 name = "ggcat-colored"
 path = "../tools/ggcat"
 arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --debug-level 2 --colors"
-
-[[tools]]
-name = "biloki-automata"
-path = "../tools/biloki-automata"
-arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --debug-level 2"
 
 [[tools]]
 name = "ggcat-ram"
