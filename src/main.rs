@@ -529,12 +529,14 @@ fn main() {
                                 ));
                                 create_dir_all(&final_out_dir).unwrap();
 
-                                for file in read_dir(&out_dir).unwrap() {
-                                    let file = file.unwrap();
+                                if experiment.copy_output.unwrap_or(true) {
+                                    for file in read_dir(&out_dir).unwrap() {
+                                        let file = file.unwrap();
 
-                                    let name = file.file_name();
-                                    std::fs::copy(file.path(), final_out_dir.join(name)).unwrap();
-                                    std::fs::remove_file(file.path()).unwrap();
+                                        let name = file.file_name();
+                                        std::fs::copy(file.path(), final_out_dir.join(name)).unwrap();
+                                        std::fs::remove_file(file.path()).unwrap();
+                                    }
                                 }
                                 remove_dir_all(&out_dir);
 

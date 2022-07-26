@@ -53,6 +53,8 @@ pub struct Benchmark {
     pub min_multiplicity: usize,
     #[serde(rename = "size-check-time")]
     pub size_check_time: u64,
+    #[serde(rename = "copy-output")]
+    pub copy_output: Option<bool>
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
