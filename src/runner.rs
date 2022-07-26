@@ -31,7 +31,7 @@ pub struct Parameters {
     pub canonical_file: String,
     pub temp_dir: String,
     pub log_file: PathBuf,
-    pub memory_gb: f64,
+    pub memory_gb: Option<f64>,
     pub size_check_time: Duration,
 }
 
@@ -181,7 +181,10 @@ impl Runner {
                     .into_string()
                     .unwrap()],
             ),
-            ("<MAX_MEMORY>", vec![format!("{:.2}", parameters.memory_gb)]),
+            (
+                "<MAX_MEMORY>",
+                vec![format!("{:.2}", parameters.memory_gb.unwrap_or(0.0))],
+            ),
         ]
         .iter()
         .cloned()

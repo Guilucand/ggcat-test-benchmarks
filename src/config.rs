@@ -42,13 +42,13 @@ pub struct Benchmark {
     #[serde(rename = "copy-dataset")]
     pub copy_dataset: bool,
     #[serde(rename = "trim-before")]
-    pub trim_before: bool,
+    pub trim_before: Option<bool>,
     #[serde(rename = "keep-temp")]
     pub keep_temp: Option<bool>,
     pub kvalues: Vec<usize>,
     pub threads: Vec<usize>,
     #[serde(rename = "max-memory")]
-    pub max_memory: f64,
+    pub max_memory: Option<f64>,
     #[serde(rename = "min-multiplicity")]
     pub min_multiplicity: usize,
     #[serde(rename = "size-check-time")]
