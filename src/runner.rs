@@ -105,7 +105,7 @@ impl Runner {
         };
 
         let input_files_list_file_name =
-            std::env::temp_dir().join(format!("input-files-{}.in", dataset_name));
+            std::env::temp_dir().join(format!("input-files-{}.txt", dataset_name));
         {
             let mut input_files_list = File::create(&input_files_list_file_name).unwrap();
             input_files_list.write_all(input_files_string.join("\n").as_bytes());
@@ -117,13 +117,27 @@ impl Runner {
             ("<KVALUE>", vec![parameters.k.to_string()]),
             ("<MULTIPLICITY>", vec![parameters.multiplicity.to_string()]),
             ("<INPUT_FILES>", input_files_string.clone()),
-            (
-                "<INPUT_FILES_LIST>",
-                vec![input_files_list_file_name.to_str().unwrap().to_string()],
-            ),
+            ("<INPUT_FILES_LIST>", {
+                let mut vec = vec![];
+
+                if tool.use_prefix_for_list.unwrap_or(false) {
+                    if parameters.multiplicity > 1 {
+                        if let Some(reads_prefix) = tool.reads_arg_prefix.clone() {
+                            vec.push(reads_prefix)
+                        }
+                    } else {
+                        if let Some(sequences_prefix) = tool.sequences_arg_prefix.clone() {
+                            vec.push(sequences_prefix)
+                        }
+                    }
+                }
+
+                vec.push(input_files_list_file_name.to_str().unwrap().to_string());
+                vec
+            }),
             ("<INPUT_FILES_READS>", {
                 if let Some(reads_prefix) = tool.reads_arg_prefix {
-                    if parameters.multiplicity == 1 {
+                    if parameters.multiplicity > 1 {
                         input_files_string
                             .iter()
                             .map(|x| vec![reads_prefix.clone(), x.clone()])
@@ -138,7 +152,7 @@ impl Runner {
             }),
             ("<INPUT_FILES_SEQUENCES>", {
                 if let Some(sequences_prefix) = tool.sequences_arg_prefix {
-                    if parameters.multiplicity >= 2 {
+                    if parameters.multiplicity == 1 {
                         input_files_string
                             .iter()
                             .map(|x| vec![sequences_prefix.clone(), x.clone()])
