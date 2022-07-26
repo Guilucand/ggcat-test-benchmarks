@@ -292,6 +292,8 @@ impl Runner {
         is_finished.store(true, Ordering::Relaxed);
         maximum_disk_usage_thread.join();
 
+        let mut has_completed = false;
+
         let output_result = {
             let output_file = Path::new(&parameters.output_file);
             let output_parent = output_file.parent().unwrap();
@@ -299,6 +301,13 @@ impl Runner {
             for file in output_parent.read_dir().unwrap() {
                 let entry = file.unwrap();
                 let file_name = entry.file_name().to_str().unwrap().to_string();
+
+                if file_name.starts_with(output_file.file_name().unwrap().to_str().unwrap())
+                    && file_name.ends_with(".gfa")
+                {
+                    // Mark gfa files as completed but do not process them
+                    has_completed = true;
+                }
 
                 if file_name.starts_with(output_file.file_name().unwrap().to_str().unwrap())
                     && file_name.ends_with(".fa")
@@ -309,8 +318,6 @@ impl Runner {
             }
             result
         };
-
-        let mut has_completed = false;
 
         if let Some(result) = output_result {
             canonical_kmers::canonicalize(&result, parameters.canonical_file, parameters.k);
