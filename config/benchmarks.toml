@@ -1,149 +1,91 @@
 
-
-
 [[benchmarks]]
-name = "article-test-1"
-datasets = ["mtest"]
-tools = ["ggcat", "cuttlefish2-ref"]
-working-dirs = ["ssd"]
-copy-dataset = true
-trim-before = false
-kvalues = [27, 63]
-threads = [32]
-max-memory = 256
-min-multiplicity = 2
-size-check-time = 500
-
-[[benchmarks]]
-name = "default-salmonella-all"
-datasets = ["salmonella-1k", "salmonella-5k", "salmonella-10k", "salmonella-50k", "salmonella-100k"]
+name = "salmonella-small"
+datasets = ["salmonella-10", "salmonella-100", "salmonella-1k"]
 tools = ["cuttlefish2-ref", "ggcat"]
 working-dirs = ["ssd"]
-copy-dataset = false
-trim-before = true
-kvalues = [15, 31, 63]
+copy-dataset = true
+kvalues = [27, 63]
 threads = [16]
-max-memory = 32
 min-multiplicity = 1
 size-check-time = 500
 
 [[benchmarks]]
-name = "colored-salmonella"
-datasets = ["salmonella-10", "salmonella-100", "salmonella-1k", "salmonella-5k", "salmonella-10k", "salmonella-50k", "salmonella-100k"]
+name = "salmonella-big"
+datasets = ["salmonella-5k", "salmonella-10k", "salmonella-50k", "salmonella-100k"]
+tools = ["cuttlefish2-ref", "ggcat"]
+working-dirs = ["ssd"]
+copy-dataset = true
+kvalues = [27, 63]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 500
+
+[[benchmarks]]
+name = "salmonella-huge"
+datasets = ["salmonella-all"]
+tools = ["cuttlefish2-ref", "ggcat"]
+working-dirs = ["ssd"]
+copy-dataset = true
+kvalues = [27, 63]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 2000
+
+
+[[benchmarks]]
+name = "colored-salmonella-small"
+datasets = ["salmonella-10", "salmonella-100", "salmonella-1k"]
 tools = ["bifrost-colored", "ggcat-colored"]
 working-dirs = ["ssd"]
-copy-dataset = false
-trim-before = true
+copy-dataset = true
 kvalues = [27]
 threads = [16]
-max-memory = 32
 min-multiplicity = 1
 size-check-time = 500
 
+[[benchmarks]]
+name = "colored-salmonella-big"
+datasets = ["salmonella-5k", "salmonella-10k", "salmonella-50k", "salmonella-100k"]
+tools = ["bifrost-colored", "ggcat-colored"]
+working-dirs = ["ssd"]
+copy-dataset = true
+kvalues = [27]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 2000
+
+[[benchmarks]]
+name = "colored-salmonella-huge"
+datasets = ["salmonella-all"]
+tools = ["bifrost-colored", "ggcat-colored"]
+working-dirs = ["ssd"]
+copy-dataset = true
+kvalues = [27]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 2000
 
 
 [[benchmarks]]
-name = "default-gut-all"
+name = "gut-complete"
 datasets = ["gut"]
 tools = ["cuttlefish2-reads", "ggcat"]
 working-dirs = ["ssd"]
-copy-dataset = false
-trim-before = true
-kvalues = [63]
+copy-dataset = true
+kvalues = [27, 63]
 threads = [16]
-max-memory = 32
 min-multiplicity = 2
-size-check-time = 500
+size-check-time = 1000
 
-[[benchmarks]]
-name = "gut"
-datasets = ["gut"]
-tools = ["cuttlefish2-reads", "bcalm", "ggcat"] # , "ggcat-links"]
-working-dirs = ["ram", "vakka", "ssd", "hdd"]
-copy-dataset = false
-trim-before = true
-kvalues = [63] # 15, 31, 63]
-threads = [32]
-max-memory = 256
-min-multiplicity = 2
-size-check-time = 500
 
 [[benchmarks]]
 name = "human"
 datasets = ["father", "mother"]
-tools = ["cuttlefish2-reads", "bcalm", "ggcat"] # , "ggcat-links"]
-working-dirs = ["ram", "vakka", "ssd", "hdd"]
+tools = ["cuttlefish2-reads", "ggcat"]
+working-dirs = ["ssd"]
 copy-dataset = false
-trim-before = true
-kvalues = [15]
-threads = [12]
-max-memory = 256
-min-multiplicity = 2
-size-check-time = 750
-
-
-[[benchmarks]]
-name = "human-reassemble"
-datasets = ["human-dbjs"]
-tools = ["cuttlefish2-ref", "bcalm", "ggcat"] # , "ggcat-links"]
-working-dirs = ["ram", "vakka", "ssd", "hdd"]
-copy-dataset = true
-trim-before = true
-kvalues = [15, 31, 63]
-threads = [32]
-max-memory = 256
-min-multiplicity = 1
-size-check-time = 750
-
-# [[benchmarks]]
-# name = "chromosome-14"
-# datasets = ["chr14"]
-# tools = ["ggcat", "ggcat-links, "cuttlefish2-reads"] # "bcalm"] # , "bifrost"]
-# working-dirs = ["ram", "vakka", " "ssdh,dd"]
-# copy-dataset = true
-# trim-before = true
-# kvalues = [3, 5, 7, 15, 23, 31, 63]
-# threads = [16]
-# max-memory = 64
-# min-multiplicity = 2
-# size-check-time = 500
-
-[[benchmarks]]
-name = "salmonella-small"
-datasets = ["salmonella-1k", "salmonella-10k", "salmonella-100k"]
-tools = ["ggcat", "bcalm", "cuttlefish2-ref"]
-working-dirs = ["ram", "vakka", "ssd", "hdd"]
-copy-dataset = true
-trim-before = true
-kvalues = [15, 31, 63]
-threads = [32]
-max-memory = 256
-min-multiplicity = 1
-size-check-time = 1000
-
-[[benchmarks]]
-name = "salmonella-fix"
-datasets = ["salmonella-1k"]
-tools = ["biloki", "biloki-automata"]#]"bcalm"]
-working-dirs = ["ram"]
-copy-dataset = true
-trim-before = true
-kvalues = [15]
+kvalues = [27, 63]
 threads = [16]
-max-memory = 256
-min-multiplicity = 1
-size-check-time = 1000
-
-
-[[benchmarks]]
-name = "salmonella-big"
-datasets = ["salmonella-100k", "salmonella-all"]
-tools = ["ggcat", "cuttlefish2-ref"]
-working-dirs = ["vakka", "hdd"]
-copy-dataset = true
-trim-before = true
-kvalues = [15, 31, 63]
-threads = [32]
-max-memory = 256
-min-multiplicity = 1
+min-multiplicity = 2
 size-check-time = 1000
