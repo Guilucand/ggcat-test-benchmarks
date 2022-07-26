@@ -1,13 +1,15 @@
 
+
+
 [[benchmarks]]
-name = "mtest"
+name = "article-test-1"
 datasets = ["mtest"]
-tools = ["ggcat"] # , "ggcat-links"]
-working-dirs = ["hdd"]
+tools = ["ggcat", "cuttlefish2-ref"]
+working-dirs = ["ssd"]
 copy-dataset = true
-trim-before = true
-kvalues = [15, 31, 63]
-threads = [12]
+trim-before = false
+kvalues = [27, 63]
+threads = [32]
 max-memory = 256
 min-multiplicity = 2
 size-check-time = 500
@@ -32,7 +34,7 @@ tools = ["bifrost-colored", "ggcat-colored"]
 working-dirs = ["ssd"]
 copy-dataset = false
 trim-before = true
-kvalues = [31]
+kvalues = [27]
 threads = [16]
 max-memory = 32
 min-multiplicity = 1
@@ -47,10 +49,10 @@ tools = ["cuttlefish2-reads", "ggcat"]
 working-dirs = ["ssd"]
 copy-dataset = false
 trim-before = true
-kvalues = [15, 31, 63]
+kvalues = [63]
 threads = [16]
 max-memory = 32
-min-multiplicity = 1
+min-multiplicity = 2
 size-check-time = 500
 
 [[benchmarks]]

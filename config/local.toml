@@ -48,11 +48,6 @@ files = [
 ]
 
 [[datasets]]
-name = "mtest"
-files = ["../datasets/human-giab/mother/D3_S1_L001_R1_001.fastq.gz"]
-
-
-[[datasets]]
 name = "gut"
 lists = ["../datasets/lists/gut.in"]
 
@@ -68,7 +63,3 @@ path = "../working-dirs/hdd/benchmark-workdir"
 [[working-dirs]]
 name = "ssd"
 path = "../working-dirs/ssd/benchmark-workdir"
-
-[[working-dirs]]
-name = "vakka"
-path = "../working-dirs/vakka/benchmark-workdir"
