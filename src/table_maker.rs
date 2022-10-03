@@ -8,12 +8,7 @@ use structopt::StructOpt;
 pub struct TableMakerCli {
     #[structopt(long, short)]
     filter: String,
-    #[structopt(long, short)]
-    rowlabel: String,
-    #[structopt(long, short)]
-    collabel: String,
-
-    results_dir: PathBuf,
+    results_dirs: Vec<PathBuf>,
 }
 
 struct LatexTableMaker {
@@ -53,6 +48,8 @@ impl LatexTableMaker {
 
     pub fn make_table(&self, title: String) -> String {
         let mut buffer = String::new();
+
+        assert!(self.col_labels.len() > 0);
 
         let col_count = self.col_labels.len();
 
@@ -110,22 +107,9 @@ impl LatexTableMaker {
         }
         buffer.push_str(r#"\end{tabular}"#);
 
-
         buffer.push_str(&format!("\\caption{{{}}}\n", title));
         // buffer.push_str("\\label{fig:my_label}\n");
         buffer.push_str("\\end{figure}\n");
-
-        // Afghanistan   & AF    &AFG&   004\\
-        // Aland Islands&   AX  & ALA   &248\\
-        // Albania &AL & ALB&  008\\
-        // Algeria    &DZ & DZA&  012\\
-        // American Samoa&   AS  & ASM&016\\
-        // Andorra& AD  & AND   &020\\
-        // Angola& AO  & AGO&024\\
-        // \hline
-        // \end{tabular}
-
-        // format!("{:?}", self.cells)
 
         buffer
     }
@@ -135,15 +119,25 @@ impl LatexTableMaker {
 */
 
 pub fn make_table(args: TableMakerCli) {
-    let mut content = fs_extra::dir::get_dir_content(args.results_dir.join("results-dir")).unwrap();
+    let mut content: Vec<_> = args
+        .results_dirs
+        .iter()
+        .map(|dir| {
+            fs_extra::dir::get_dir_content(dir.join("results-dir"))
+                .unwrap()
+                .files
+                .into_iter()
+        })
+        .flatten()
+        .collect();
 
     let mut table_maker = LatexTableMaker::new();
 
-    let target_dataset = args.filter;//"salmonella-10k";
+    let target_dataset = args.filter; //"salmonella-10k";
 
-    content.files.sort();
+    content.sort();
 
-    for file in content.files {
+    for file in content {
         if !file.ends_with("info.json") {
             continue;
         }
@@ -166,32 +160,16 @@ pub fn make_table(args: TableMakerCli) {
 
         let results: RunResults = serde_json::from_reader(File::open(&file).unwrap()).unwrap();
 
-
-        let is_completed = {
-            fs_extra::dir::get_dir_content(args.results_dir.join("outputs-dir")
-                .join(&format!("{}_{}_K{}_{}_T{}thr_out", dataset, wdir, k, tool, threads))).map(|content| {
-                let mut is_completed = false;
-                for file in content.files {
-                    if file.contains("canonical") {
-                        is_completed = true;
-                    }
-                }
-                is_completed
-            }).unwrap_or(false)
-        };
-
         table_maker.add_sample(
             &k.to_string(),
             tool,
-            if is_completed {
+            if results.has_completed {
                 (
                     format!("{:.2}s", results.real_time_secs),
                     Some(format!("{:.2}gb", results.max_memory_gb)),
                 )
             } else {
-                (
-                    "crashed".to_string(), None
-                )
+                ("crashed".to_string(), None)
             },
         );
 
@@ -202,7 +180,7 @@ pub fn make_table(args: TableMakerCli) {
     }
 
     println!(
-        "Table: {}",
+        "Table: {}\n",
         table_maker.make_table(format!("Dataset: {}", target_dataset))
     );
 }
