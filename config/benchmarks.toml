@@ -99,7 +99,7 @@ copy-output = false
 [[benchmarks]]
 name = "human-colored-k27"
 datasets = ["human-5", "human-10", "human-50", "human-100"]
-tools = ["ggcat", "bifrost-colored"]
+tools = ["ggcat-colored", "bifrost-colored"]
 working-dirs = ["ssd"]
 copy-dataset = false
 kvalues = [27]
@@ -111,7 +111,7 @@ copy-output = true
 [[benchmarks]]
 name = "human-colored-k63"
 datasets = ["human-5", "human-10", "human-50", "human-100"]
-tools = ["ggcat", "bifrost-colored-k63"]
+tools = ["ggcat-colored", "bifrost-colored-k63"]
 working-dirs = ["ssd"]
 copy-dataset = false
 kvalues = [63]
