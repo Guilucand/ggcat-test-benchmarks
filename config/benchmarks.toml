@@ -97,7 +97,7 @@ copy-output = false
 
 
 [[benchmarks]]
-name = "colored-human-k27"
+name = "human-colored-k27"
 datasets = ["human-5", "human-10", "human-50", "human-100"]
 tools = ["ggcat", "bifrost-colored"]
 working-dirs = ["ssd"]
@@ -109,7 +109,7 @@ size-check-time = 1000
 copy-output = true
 
 [[benchmarks]]
-name = "colored-human-k63"
+name = "human-colored-k63"
 datasets = ["human-5", "human-10", "human-50", "human-100"]
 tools = ["ggcat", "bifrost-colored-k63"]
 working-dirs = ["ssd"]
