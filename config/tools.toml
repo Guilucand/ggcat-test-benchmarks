@@ -7,8 +7,25 @@ sequences-arg-prefix = "-s"
 use-prefix-for-list = true
 
 [[tools]]
+name = "bifrost-k63"
+path = "../tools/Bifrost-k63"
+arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_LIST> -o <OUTPUT_FILE> --verbose --fasta"
+reads-arg-prefix = "-r"
+sequences-arg-prefix = "-s"
+use-prefix-for-list = true
+
+
+[[tools]]
 name = "bifrost-colored"
 path = "../tools/Bifrost"
+arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_LIST> -o <OUTPUT_FILE> --verbose --fasta -c"
+reads-arg-prefix = "-r"
+sequences-arg-prefix = "-s"
+use-prefix-for-list = true
+
+[[tools]]
+name = "bifrost-colored-k63"
+path = "../tools/Bifrost-k63"
 arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_LIST> -o <OUTPUT_FILE> --verbose --fasta -c"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"

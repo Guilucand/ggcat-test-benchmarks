@@ -9,6 +9,7 @@ pushd building/
     git clone https://github.com/Guilucand/ggcat --recursive
     git clone https://github.com/GATB/bcalm --recursive
     git clone https://github.com/pmelsted/bifrost
+    git clone https://github.com/pmelsted/bifrost bifrost-k63
     git clone https://github.com/COMBINE-lab/cuttlefish cuttlefish2
 
     pushd ggcat/
@@ -35,7 +36,14 @@ pushd building/
         cmake ..
         make -j
     popd
-    cp bifrost/ tools
+
+    pushd bifrost-k63/
+        git pull
+        mkdir build
+        cd build
+        cmake .. -DMAX_KMER_SIZE=64
+        make -j
+    popd
 
 
     pushd cuttlefish2/

@@ -94,3 +94,28 @@ threads = [16]
 min-multiplicity = 2
 size-check-time = 1000
 copy-output = false
+
+
+[[benchmarks]]
+name = "colored-human-k27"
+datasets = ["human-5", "human-10", "human-50", "human-100"]
+tools = ["ggcat", "bifrost-colored"]
+working-dirs = ["ssd"]
+copy-dataset = false
+kvalues = [27]
+threads = [16]
+min-multiplicity = 2
+size-check-time = 1000
+copy-output = true
+
+[[benchmarks]]
+name = "colored-human-k63"
+datasets = ["human-5", "human-10", "human-50", "human-100"]
+tools = ["ggcat", "bifrost-colored-k63"]
+working-dirs = ["ssd"]
+copy-dataset = false
+kvalues = [63]
+threads = [16]
+min-multiplicity = 2
+size-check-time = 1000
+copy-output = true
