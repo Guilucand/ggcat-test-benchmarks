@@ -13,7 +13,7 @@ pushd building/
 
     pushd ggcat/
         git pull
-	git checkout async-impl
+	git checkout main
         cargo build --release --features "process-stats"
         cp ./target/release/ggcat ../../tools/ggcat -f
         # cargo build --release --features "build-links,process-stats"
@@ -24,7 +24,7 @@ pushd building/
         git pull
         mkdir build
         cd build
-        cmake ..
+        cmake .. -DKSIZE_LIST="32 64 96 128 160 192 224 256"
         make -j
     popd
 
@@ -42,7 +42,7 @@ pushd building/
         git pull
         mkdir build
         cd build
-        cmake ..
+        cmake .. -DINSTANCE_COUNT=256
         make -j
     popd
 popd

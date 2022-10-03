@@ -359,32 +359,6 @@ fn main() {
                     let dataset_dir = tmp_workdir.as_ref().join("dataset");
                     create_dir(&dataset_dir);
 
-                    if let Some(tarball) = &dataset.tar {
-                        for entry in tar::Archive::new(File::open(tarball).unwrap())
-                            .entries()
-                            .unwrap()
-                            .filter(|d| {
-                                d.is_ok()
-                                    && d.as_ref().unwrap().path().unwrap().extension().is_some()
-                            })
-                            .take(
-                                dataset
-                                    .limit
-                                    .map(|limit| limit - input_files.len())
-                                    .unwrap_or(usize::MAX),
-                            )
-                        {
-                            let mut entry = entry.unwrap();
-                            let tmp_path = entry.path().unwrap();
-                            let file_name = tmp_path.file_name().unwrap();
-
-                            let dest_file = dataset_dir.join(file_name);
-
-                            entry.unpack(&dest_file).unwrap();
-                            input_files.push(dest_file);
-                        }
-                    }
-
                     let threads = if let Some(threads) = &args.threads {
                         threads.split(",").map(|t| t.parse().unwrap()).collect()
                     } else {
@@ -408,7 +382,36 @@ fn main() {
                                 }
 
                                 if !dataset_copied && experiment.copy_dataset {
+
+                                    println!("Copying dataset for bench: {}", results_file.file_name().unwrap().to_str().unwrap());
+
                                     dataset_copied = true;
+
+                                    if let Some(tarball) = &dataset.tar {
+                                        for entry in tar::Archive::new(File::open(tarball).unwrap())
+                                            .entries()
+                                            .unwrap()
+                                            .filter(|d| {
+                                                d.is_ok()
+                                                    && d.as_ref().unwrap().path().unwrap().extension().is_some()
+                                            })
+                                            .take(
+                                                dataset
+                                                    .limit
+                                                    .map(|limit| limit - input_files.len())
+                                                    .unwrap_or(usize::MAX),
+                                            )
+                                        {
+                                            let mut entry = entry.unwrap();
+                                            let tmp_path = entry.path().unwrap();
+                                            let file_name = tmp_path.file_name().unwrap();
+
+                                            let dest_file = dataset_dir.join(file_name);
+
+                                            entry.unpack(&dest_file).unwrap();
+                                            input_files.push(dest_file);
+                                        }
+                                    }
 
                                     let mut new_input_files = Vec::new();
 
