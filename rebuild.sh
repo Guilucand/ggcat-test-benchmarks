@@ -1,4 +1,5 @@
 
+git pull
 cargo build --release
 
 mkdir building/
@@ -8,7 +9,7 @@ pushd building/
 
     pushd ggcat/
         git pull
-	git checkout async-impl
+	git checkout main
         cargo build --release --features "process-stats"
         cp ./target/release/ggcat ../../tools/ggcat -f
         # cargo build --release --features "build-links,process-stats"
