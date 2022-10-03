@@ -408,6 +408,9 @@ fn main() {
                                 }
 
                                 if !dataset_copied && experiment.copy_dataset {
+
+                                    println!("Copying dataset for bench: {}", results_file.file_name().unwrap().to_str().unwrap());
+
                                     dataset_copied = true;
 
                                     let mut new_input_files = Vec::new();
