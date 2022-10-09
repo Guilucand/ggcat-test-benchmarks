@@ -6,7 +6,7 @@ mkdir tools/
 
 pushd building/
 
-    git clone https://github.com/Guilucand/ggcat --recursive
+    git clone https://github.com/algbio/ggcat --recursive
     git clone https://github.com/GATB/bcalm --recursive
     git clone https://github.com/pmelsted/bifrost
     git clone https://github.com/pmelsted/bifrost bifrost-k63
