@@ -45,7 +45,7 @@ working-dirs = ["ssd"]
 copy-dataset = false
 kvalues = [27]
 threads = [16]
-min-multiplicity = 2
+min-multiplicity = 1
 size-check-time = 2000
 copy-output = true
 
@@ -57,7 +57,7 @@ working-dirs = ["ssd"]
 copy-dataset = false
 kvalues = [63]
 threads = [16]
-min-multiplicity = 2
+min-multiplicity = 1
 size-check-time = 2000
 copy-output = true
 
