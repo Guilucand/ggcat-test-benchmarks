@@ -1,7 +1,7 @@
 [[tools]]
 name = "bifrost"
 path = "../tools/Bifrost"
-arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_LIST> -o <OUTPUT_FILE> --verbose --fasta"
+arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_LIST> -o <OUTPUT_FILE> --verbose"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
 use-prefix-for-list = true
@@ -9,7 +9,7 @@ use-prefix-for-list = true
 [[tools]]
 name = "bifrost-k63"
 path = "../tools/Bifrost-k63"
-arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_LIST> -o <OUTPUT_FILE> --verbose --fasta"
+arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_LIST> -o <OUTPUT_FILE> --verbose"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
 use-prefix-for-list = true
@@ -18,7 +18,7 @@ use-prefix-for-list = true
 [[tools]]
 name = "bifrost-colored"
 path = "../tools/Bifrost"
-arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_LIST> -o <OUTPUT_FILE> --verbose --fasta -c"
+arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_LIST> -o <OUTPUT_FILE> --verbose -c"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
 use-prefix-for-list = true
@@ -26,10 +26,27 @@ use-prefix-for-list = true
 [[tools]]
 name = "bifrost-colored-k63"
 path = "../tools/Bifrost-k63"
-arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_LIST> -o <OUTPUT_FILE> --verbose --fasta -c"
+arguments = "build -k <KVALUE> -t <THREADS>  <INPUT_FILES_LIST> -o <OUTPUT_FILE> --verbose -c"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
 use-prefix-for-list = true
+
+[[tools]]
+name = "bifrost-colored-k63-query"
+path = "../tools/Bifrost-k63"
+arguments = "build -k <KVALUE> -t <THREADS> -g <INPUT_GRAPH> -q <INPUT_QUERY>  -o <OUTPUT_FILE> --verbose"
+reads-arg-prefix = "-r"
+sequences-arg-prefix = "-s"
+use-prefix-for-list = true
+
+[[tools]]
+name = "bifrost-colored-k63-query-colored"
+path = "../tools/Bifrost-k63"
+arguments = "build -k <KVALUE> -t <THREADS> -g <INPUT_GRAPH> -q <INPUT_QUERY>  -o <OUTPUT_FILE> --verbose -c"
+reads-arg-prefix = "-r"
+sequences-arg-prefix = "-s"
+use-prefix-for-list = true
+
 
 [[tools]]
 name = "cuttlefish2-ref"
@@ -50,12 +67,22 @@ arguments = "-in <INPUT_FILES_LIST> -kmer-size <KVALUE> -nb-cores <THREADS> -abu
 [[tools]]
 name = "ggcat"
 path = "../tools/ggcat"
-arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --debug-level 2"
+arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE>"
 
 [[tools]]
 name = "ggcat-colored"
 path = "../tools/ggcat"
-arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --debug-level 2 --colors"
+arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --colors"
+
+[[tools]]
+name = "ggcat-query"
+path = "../tools/ggcat"
+arguments = "query -k <KVALUE> -j <THREADS> <INPUT_GRAPH> <INPUT_QUERY> -t <TEMP_DIR> -o <OUTPUT_FILE>"
+
+[[tools]]
+name = "ggcat-query-colored"
+path = "../tools/ggcat"
+arguments = "query -k <KVALUE> -j <THREADS> <INPUT_GRAPH> <INPUT_QUERY> -t <TEMP_DIR> -o <OUTPUT_FILE> --colors"
 
 [[tools]]
 name = "ggcat-ram"

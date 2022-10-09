@@ -1,4 +1,103 @@
 
+
+[[benchmarks]]
+name = "article-test-a"
+datasets = ["mother"]
+tools = ["cuttlefish2-reads", "ggcat"]
+working-dirs = ["hdd"]
+copy-dataset = false
+kvalues = [27, 63, 119, 255]
+threads = [12]
+min-multiplicity = 2
+size-check-time = 2000
+copy-output = true
+
+
+[[benchmarks]]
+name = "article-test-b"
+datasets = ["salmonella-all"]
+tools = ["cuttlefish2-ref", "ggcat"]
+working-dirs = ["hdd"]
+copy-dataset = true
+kvalues = [27, 63, 119, 255]
+threads = [12]
+min-multiplicity = 1
+size-check-time = 2000
+copy-output = false
+
+[[benchmarks]]
+name = "article-test-c"
+datasets = ["gut"]
+tools = ["cuttlefish2-reads", "ggcat"]
+working-dirs = ["ssd"]
+copy-dataset = true
+kvalues = [27, 63, 119, 255]
+threads = [12]
+min-multiplicity = 2
+size-check-time = 2000
+copy-output = true
+
+[[benchmarks]]
+name = "article-test-d-k27"
+datasets = ["human-100"]
+tools = ["ggcat-colored", "bifrost-colored"]
+working-dirs = ["ssd"]
+copy-dataset = false
+kvalues = [27]
+threads = [16]
+min-multiplicity = 2
+size-check-time = 2000
+copy-output = true
+
+[[benchmarks]]
+name = "article-test-d-k63"
+datasets = ["human-100"]
+tools = ["ggcat-colored", "bifrost-colored-k63"]
+working-dirs = ["ssd"]
+copy-dataset = false
+kvalues = [63]
+threads = [16]
+min-multiplicity = 2
+size-check-time = 2000
+copy-output = true
+
+[[benchmarks]]
+name = "article-test-e-k27"
+datasets = ["salmonella-100k"]
+tools = ["ggcat-colored", "bifrost-colored"]
+working-dirs = ["ssd"]
+copy-dataset = true
+kvalues = [27]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 2000
+copy-output = true
+
+[[benchmarks]]
+name = "article-test-e-k63"
+datasets = ["salmonella-100k"]
+tools = ["ggcat-colored", "bifrost-colored"]
+working-dirs = ["ssd"]
+copy-dataset = true
+kvalues = [63]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 2000
+copy-output = true
+
+[[benchmarks]]
+name = "article-test-f"
+datasets = ["salmonella-10", "salmonella-100", "salmonella-1k", "salmonella-5k", "salmonella-10k", "salmonella-50k", "salmonella-100k"]
+tools = ["cuttlefish2-ref", "ggcat"]
+working-dirs = ["ssd"]
+copy-dataset = true
+kvalues = [63]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 2000
+copy-output = false
+
+
 [[benchmarks]]
 name = "salmonella-small"
 datasets = ["salmonella-10", "salmonella-100", "salmonella-1k"]
