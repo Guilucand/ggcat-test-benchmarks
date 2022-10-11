@@ -35,7 +35,7 @@ const REMAPPINGS: &[(&str, &str)] = &[
     ("human-100", "100 Human genomes"),
 
     ("human-100", "100 Human genomes"),
-    ("cuttlefish", "Cuttlefish 2"),
+    ("cuttlefish2", "Cuttlefish 2"),
     ("bifrost", "BiFrost"),
     ("bifrost-colored", "BiFrost colored"),
     ("ggcat", "GGCAT"),
