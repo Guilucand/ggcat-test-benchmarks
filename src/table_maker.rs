@@ -247,9 +247,9 @@ pub fn make_table(args: TableMakerCli) {
             let seconds = ((results.real_time_secs) % 60.00) as usize;
 
             let duration_string = if args.seconds_time {
-                format!("{}:{}:{}", hours, minutes, seconds)
+                format!("{}H:{}m:{}s", hours, minutes, seconds)
             } else {
-                format!("{}:{}", hours, minutes)
+                format!("{}H:{}m", hours, minutes)
             };
 
             table_maker.add_sample(
