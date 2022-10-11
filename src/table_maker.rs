@@ -168,7 +168,7 @@ impl LatexTableMaker {
             buffer.push_str("\\hline\n");
         }
 
-        buffer.push_str(r#"\end{tabular}\n"#);
+        buffer.push_str("\\end{tabular}\n");
 
         // buffer.push_str("\\label{fig:my_label}\n");
         buffer.push_str("\\end{table}\n");
