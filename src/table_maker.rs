@@ -189,28 +189,28 @@ struct ParsedPath {
     threads: usize,
 }
 
+fn remap(val: &str) -> String {
+    REMAPPINGS.iter().find(|x| x.0 == val).map(|x| x.1).unwrap_or(val).to_string()
+}
+
 impl ParsedPath {
     pub fn from_path(path: &str) -> Option<Self> {
         if !path.ends_with("info.json") {
             return None;
         }
 
-        fn remap(val: &str) -> String {
-            REMAPPINGS.iter().find(|x| x.0 == val).map(|x| x.1).unwrap_or(val).to_string()
-        }
-
         let file_name = path.split("/").last().unwrap();
         let parts: Vec<_> = file_name.split("_").collect();
 
         // {}_{}_K{}_{}_T{}thr-info.json
-        let dataset = remap(parts[0]);
+        let dataset = parts[0].to_string();
         let wdir = parts[1].to_string();
         let k: usize = parts[2][1..].parse().unwrap();
         let tool = parts[3].to_string();
 
         let tool = tool.strip_suffix("-ref").unwrap_or(&tool);
         let tool = tool.strip_suffix("-reads").unwrap_or(&tool);
-        let tool = remap(tool.strip_suffix(&format!("-k{}", k)).unwrap_or(&tool));
+        let tool = tool.strip_suffix(&format!("-k{}", k)).unwrap_or(&tool).to_string();
 
         let threads: usize = parts[4][1..(parts[4].len() - "thr-info.json".len())]
             .parse()
@@ -273,9 +273,9 @@ pub fn make_table(args: TableMakerCli) {
             };
 
             table_maker.add_sample(
-                &dataset,
+                &remap(&dataset),
                 &k.to_string(),
-                &tool,
+                &remap(&tool),
                 if results.has_completed {
                     (
                         duration_string,
