@@ -184,6 +184,11 @@ impl ParsedPath {
         let wdir = parts[1].to_string();
         let k: usize = parts[2][1..].parse().unwrap();
         let tool = parts[3].to_string();
+
+        let tool = tool.strip_suffix("-ref").unwrap_or(&tool);
+        let tool = tool.strip_suffix("-reads").unwrap_or(&tool);
+        let tool = tool.strip_suffix(&format!("-k{}", k)).unwrap_or(&tool).to_string();
+
         let threads: usize = parts[4][1..(parts[4].len() - "thr-info.json".len())]
             .parse()
             .unwrap();
