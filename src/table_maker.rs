@@ -27,6 +27,22 @@ struct LatexTableMaker {
 
 const MULTIROW_ALIGNMENT: [f64; 4] = [0.0, -0.6, -1.3, -1.9];
 
+const REMAPPINGS: &[(&str, &str)] = &[
+    ("mother", "Human"),
+    ("gut", "Gut microbiome"),
+    ("salmonella-100k", "Salmonella archive (100K)"),
+    ("salmonella-all", "Salmonella archive (309K)"),
+    ("human-100", "100 Human genomes"),
+
+    ("human-100", "100 Human genomes"),
+    ("cuttlefish", "Cuttlefish 2"),
+    ("bifrost", "BiFrost"),
+    ("bifrost-colored", "BiFrost colored"),
+    ("ggcat", "GGCAT"),
+    ("ggcat-colored", "GGCAT colored"),
+];
+
+
 impl LatexTableMaker {
     pub fn new() -> Self {
         Self {
@@ -98,7 +114,7 @@ impl LatexTableMaker {
         // buffer.push_str("\\hline\n");
         buffer.push_str("\\hline\n");
         buffer.push_str(&{
-            let mut col_names = String::from(r#"Dataset&K"#);
+            let mut col_names = String::from(r#"Dataset&$k$"#);
             for label in &self.col_labels {
                 col_names.push_str("&");
                 col_names.push_str(label);
@@ -179,18 +195,22 @@ impl ParsedPath {
             return None;
         }
 
+        fn remap(val: &str) -> String {
+            REMAPPINGS.iter().find(|x| x.0 == val).map(|x| x.1).unwrap_or(val).to_string()
+        }
+
         let file_name = path.split("/").last().unwrap();
         let parts: Vec<_> = file_name.split("_").collect();
 
         // {}_{}_K{}_{}_T{}thr-info.json
-        let dataset = parts[0].to_string();
+        let dataset = remap(parts[0]);
         let wdir = parts[1].to_string();
         let k: usize = parts[2][1..].parse().unwrap();
         let tool = parts[3].to_string();
 
         let tool = tool.strip_suffix("-ref").unwrap_or(&tool);
         let tool = tool.strip_suffix("-reads").unwrap_or(&tool);
-        let tool = tool.strip_suffix(&format!("-k{}", k)).unwrap_or(&tool).to_string();
+        let tool = remap(tool.strip_suffix(&format!("-k{}", k)).unwrap_or(&tool));
 
         let threads: usize = parts[4][1..(parts[4].len() - "thr-info.json".len())]
             .parse()
@@ -242,7 +262,7 @@ pub fn make_table(args: TableMakerCli) {
 
             let results: RunResults = serde_json::from_reader(File::open(&file).unwrap()).unwrap();
 
-            let hours = ((results.real_time_secs / 3600.0)) as usize;
+            let hours = (results.real_time_secs / 3600.0) as usize;
             let minutes = ((results.real_time_secs / 60.0) % 60.0) as usize;
             let seconds = ((results.real_time_secs) % 60.00) as usize;
 
