@@ -5,6 +5,7 @@ use std::cmp::max;
 use std::fs::File;
 use std::ops::Range;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
@@ -14,6 +15,8 @@ pub struct TableMakerCli {
     results_dirs: Vec<PathBuf>,
     #[structopt(long, short)]
     title: String,
+    #[structopt(long, short)]
+    seconds_time: bool,
 }
 
 struct LatexTableMaker {
@@ -239,13 +242,23 @@ pub fn make_table(args: TableMakerCli) {
 
             let results: RunResults = serde_json::from_reader(File::open(&file).unwrap()).unwrap();
 
+            let hours = ((results.real_time_secs / 3600.0)) as usize;
+            let minutes = ((results.real_time_secs / 60.0) % 60.0) as usize;
+            let seconds = ((results.real_time_secs) % 60.00) as usize;
+
+            let duration_string = if args.seconds_time {
+                format!("{}:{}:{}", hours, minutes, seconds)
+            } else {
+                format!("{}:{}", hours, minutes)
+            };
+
             table_maker.add_sample(
                 &dataset,
                 &k.to_string(),
                 &tool,
                 if results.has_completed {
                     (
-                        format!("{:.2}s", results.real_time_secs),
+                        duration_string,
                         Some(format!("{:.2}gb", results.max_memory_gb)),
                     )
                 } else {
