@@ -149,7 +149,7 @@ impl LatexTableMaker {
                     for col_idx in 0..self.col_labels.len() {
                         row_content.push_str("&");
                         row_content.push_str(&format!(
-                            "\\cell{{{}\\\\({})}}",
+                            "\\cell{{{} ({})}}",
                             self.cells[row_idx][col_idx]
                                 .as_ref()
                                 .map(|x| x.0.clone())
@@ -279,7 +279,7 @@ pub fn make_table(args: TableMakerCli) {
                 if results.has_completed {
                     (
                         duration_string,
-                        Some(format!("{:.2}gb", results.max_memory_gb)),
+                        Some(format!("{:.2}GB", results.max_memory_gb)),
                     )
                 } else {
                     ("crashed".to_string(), None)
