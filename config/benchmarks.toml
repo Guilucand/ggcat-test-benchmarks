@@ -97,6 +97,18 @@ min-multiplicity = 1
 size-check-time = 2000
 copy-output = false
 
+[[benchmarks]]
+name = "article-test-g"
+datasets = ["human-100"]
+tools = ["ggcat"]
+working-dirs = ["ssd"]
+copy-dataset = false
+kvalues = [63]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 2000
+copy-output = false
+
 
 [[benchmarks]]
 name = "salmonella-small"

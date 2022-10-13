@@ -145,7 +145,7 @@ fn main() {
                 perms.set_mode(0o777);
                 std::fs::set_permissions(path, perms).unwrap();
 
-                for path in std::fs::read_dir(path).unwrap() {
+                for path in read_dir(path).unwrap() {
                     if let Ok(dir) = path {
                         let mut perms = std::fs::metadata(dir.path()).unwrap().permissions();
                         perms.set_mode(0o777);
