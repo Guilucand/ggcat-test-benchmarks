@@ -2,6 +2,7 @@
 #
 #SBATCH --job-name=article-tests-g
 #SBATCH --output=article-tests-g.txt
+#SBATCH --cpus-per-task=256
 #SBATCH --ntasks=1
 #SBATCH --time=3000:00
 #SBATCH --mem=524288
