@@ -234,7 +234,7 @@ copy-output = true
 
 [[benchmarks]]
 name = "human-colored-query-1-ggcat"
-datasets = ["human-100-cq1-ggcat-colored"]
+datasets = ["human-100-cq1-ggcat-colored-query"]
 tools = ["ggcat-colored"]
 working-dirs = ["ssd"]
 copy-dataset = false
