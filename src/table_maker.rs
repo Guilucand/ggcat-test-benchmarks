@@ -33,7 +33,6 @@ const REMAPPINGS: &[(&str, &str)] = &[
     ("salmonella-100k", "Salmonella archive (100K)"),
     ("salmonella-all", "Salmonella archive (309K)"),
     ("human-100", "100 Human genomes"),
-
     ("human-100", "100 Human genomes"),
     ("cuttlefish2", "Cuttlefish 2"),
     ("bifrost", "BiFrost"),
@@ -41,7 +40,6 @@ const REMAPPINGS: &[(&str, &str)] = &[
     ("ggcat", "GGCAT"),
     ("ggcat-colored", "GGCAT colored"),
 ];
-
 
 impl LatexTableMaker {
     pub fn new() -> Self {
@@ -190,7 +188,12 @@ struct ParsedPath {
 }
 
 fn remap(val: &str) -> String {
-    REMAPPINGS.iter().find(|x| x.0 == val).map(|x| x.1).unwrap_or(val).to_string()
+    REMAPPINGS
+        .iter()
+        .find(|x| x.0 == val)
+        .map(|x| x.1)
+        .unwrap_or(val)
+        .to_string()
 }
 
 impl ParsedPath {
@@ -210,7 +213,12 @@ impl ParsedPath {
 
         let tool = tool.strip_suffix("-ref").unwrap_or(&tool);
         let tool = tool.strip_suffix("-reads").unwrap_or(&tool);
-        let tool = tool.strip_suffix(&format!("-k{}", k)).unwrap_or(&tool).to_string();
+        let tool = tool
+            .strip_suffix(&format!("-k{}", k))
+            .unwrap_or(&tool)
+            .to_string();
+
+        let dataset = dataset.strip_suffix(&format!("-{}", tool));
 
         let threads: usize = parts[4][1..(parts[4].len() - "thr-info.json".len())]
             .parse()
@@ -221,7 +229,7 @@ impl ParsedPath {
             wdir,
             k,
             tool,
-            threads
+            threads,
         })
     }
 }
@@ -253,7 +261,11 @@ pub fn make_table(args: TableMakerCli) {
             }
 
             let ParsedPath {
-                dataset, wdir, k, tool, threads
+                dataset,
+                wdir,
+                k,
+                tool,
+                threads,
             } = ParsedPath::from_path(&file).unwrap();
 
             if dataset != target_dataset {
@@ -297,8 +309,5 @@ pub fn make_table(args: TableMakerCli) {
         }
     }
 
-    println!(
-        "Table: \n{}",
-        table_maker.make_table(args.title)
-    );
+    println!("Table: \n{}", table_maker.make_table(args.title));
 }
