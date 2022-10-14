@@ -230,3 +230,52 @@ threads = [16]
 min-multiplicity = 1
 size-check-time = 1000
 copy-output = true
+
+
+[[benchmarks]]
+name = "human-colored-query-1-ggcat"
+datasets = ["human-100-cq1-ggcat-colored"]
+tools = ["ggcat-colored"]
+working-dirs = ["ssd"]
+copy-dataset = false
+kvalues = [63]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 1000
+copy-output = false
+
+[[benchmarks]]
+name = "human-colored-query-1-bifrost"
+datasets = ["human-100-colored-cq1-bifrost-colored-k63-query"]
+tools = ["bifrost-colored-k63-query"]
+working-dirs = ["ssd"]
+copy-dataset = false
+kvalues = [63]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 1000
+copy-output = false
+
+[[benchmarks]]
+name = "human-query-1-ggcat"
+datasets = ["human-100-q1-ggcat-query"]
+tools = ["ggcat-query"]
+working-dirs = ["ssd"]
+copy-dataset = false
+kvalues = [63]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 1000
+copy-output = false
+
+[[benchmarks]]
+name = "human-query-1-bifrost"
+datasets = ["human-100-q1-bifrost-k63-query"]
+tools = ["bifrost-k63-query"]
+working-dirs = ["ssd"]
+copy-dataset = false
+kvalues = [63]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 1000
+copy-output = false
