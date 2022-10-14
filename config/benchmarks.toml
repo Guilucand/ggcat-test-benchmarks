@@ -279,3 +279,53 @@ threads = [16]
 min-multiplicity = 1
 size-check-time = 1000
 copy-output = true
+
+# K27
+
+[[benchmarks]]
+name = "human-colored-query-1-ggcat27"
+datasets = ["human-100-cq1-ggcat-colored-query27"]
+tools = ["ggcat-query-colored"]
+working-dirs = ["ssd"]
+copy-dataset = false
+kvalues = [27]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 1000
+copy-output = true
+
+[[benchmarks]]
+name = "human-colored-query-1-bifrost27"
+datasets = ["human-100-cq1-bifrost-colored-k27-query"]
+tools = ["bifrost-colored-k27-query"]
+working-dirs = ["ssd"]
+copy-dataset = false
+kvalues = [27]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 1000
+copy-output = true
+
+[[benchmarks]]
+name = "human-query-1-ggcat27"
+datasets = ["human-100-q1-ggcat-query27"]
+tools = ["ggcat-query"]
+working-dirs = ["ssd"]
+copy-dataset = false
+kvalues = [27]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 1000
+copy-output = true
+
+[[benchmarks]]
+name = "human-query-1-bifrost27"
+datasets = ["human-100-q1-bifrost-k27-query"]
+tools = ["bifrost-k27-query"]
+working-dirs = ["ssd"]
+copy-dataset = false
+kvalues = [27]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 1000
+copy-output = true
