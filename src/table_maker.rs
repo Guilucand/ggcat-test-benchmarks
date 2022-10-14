@@ -218,7 +218,10 @@ impl ParsedPath {
             .unwrap_or(&tool)
             .to_string();
 
-        let dataset = dataset.strip_suffix(&format!("-{}", tool));
+        let dataset = dataset
+            .strip_suffix(&format!("-{}", dataset))
+            .unwrap_or(&dataset)
+            .to_string();
 
         let threads: usize = parts[4][1..(parts[4].len() - "thr-info.json".len())]
             .parse()
