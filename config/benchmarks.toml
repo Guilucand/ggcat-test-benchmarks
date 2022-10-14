@@ -99,9 +99,9 @@ copy-output = false
 
 [[benchmarks]]
 name = "article-test-g"
-datasets = ["human-100"]
+datasets = ["human-50-nvme"]
 tools = ["ggcat"]
-working-dirs = ["ssd"]
+working-dirs = ["nvme"]
 copy-dataset = false
 kvalues = [63]
 threads = [16]
