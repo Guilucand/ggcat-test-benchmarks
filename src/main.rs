@@ -517,6 +517,10 @@ fn main() {
                                         size_check_time: Duration::from_millis(
                                             experiment.size_check_time,
                                         ),
+                                        query_files: (
+                                            dataset.query.clone(),
+                                            dataset.colorfile.clone(),
+                                        ),
                                     },
                                 );
 
