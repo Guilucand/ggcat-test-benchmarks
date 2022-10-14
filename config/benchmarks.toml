@@ -246,7 +246,7 @@ copy-output = true
 
 [[benchmarks]]
 name = "human-colored-query-1-bifrost"
-datasets = ["human-100-colored-cq1-bifrost-colored-k63-query"]
+datasets = ["human-100-cq1-bifrost-colored-k63-query"]
 tools = ["bifrost-colored-k63-query"]
 working-dirs = ["ssd"]
 copy-dataset = false
