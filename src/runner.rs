@@ -331,7 +331,9 @@ impl Runner {
         };
 
         if let Some(result) = output_result {
-            canonical_kmers::canonicalize(&result, parameters.canonical_file, parameters.k);
+            if parameters.query_files.0.is_none() {
+                canonical_kmers::canonicalize(&result, parameters.canonical_file, parameters.k);
+            }
             has_completed = true;
         }
 
