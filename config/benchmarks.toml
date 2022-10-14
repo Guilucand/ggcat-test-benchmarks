@@ -242,7 +242,7 @@ kvalues = [63]
 threads = [16]
 min-multiplicity = 1
 size-check-time = 1000
-copy-output = false
+copy-output = true
 
 [[benchmarks]]
 name = "human-colored-query-1-bifrost"
@@ -254,7 +254,7 @@ kvalues = [63]
 threads = [16]
 min-multiplicity = 1
 size-check-time = 1000
-copy-output = false
+copy-output = true
 
 [[benchmarks]]
 name = "human-query-1-ggcat"
@@ -266,7 +266,7 @@ kvalues = [63]
 threads = [16]
 min-multiplicity = 1
 size-check-time = 1000
-copy-output = false
+copy-output = true
 
 [[benchmarks]]
 name = "human-query-1-bifrost"
@@ -278,4 +278,4 @@ kvalues = [63]
 threads = [16]
 min-multiplicity = 1
 size-check-time = 1000
-copy-output = false
+copy-output = true
