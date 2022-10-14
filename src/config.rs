@@ -30,6 +30,7 @@ pub struct Dataset {
     pub lists: Option<Vec<PathBuf>>,
     pub tar: Option<PathBuf>,
     pub limit: Option<usize>,
+    pub query: Option<PathBuf>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

@@ -368,10 +368,22 @@ fn main() {
                     for thread in &threads {
                         for kval in &experiment.kvalues {
                             for tool in &tools {
-                                let results_file = results_dir.join(&format!(
-                                    "{}_{}_K{}_{}_T{}thr-info.json",
-                                    dataset.name, working_dir.name, kval, tool.name, thread
-                                ));
+                                let base_name = format!(
+                                    "{}_{}_K{}_{}_T{}{}",
+                                    dataset.name,
+                                    working_dir.name,
+                                    kval,
+                                    tool.name,
+                                    thread,
+                                    if dataset.query.is_some() {
+                                        format!("_query")
+                                    } else {
+                                        "".to_string()
+                                    }
+                                );
+
+                                let results_file =
+                                    results_dir.join(&format!("{}thr-info.json", base_name));
 
                                 if results_file.exists() {
                                     println!(
@@ -382,8 +394,10 @@ fn main() {
                                 }
 
                                 if !dataset_copied && experiment.copy_dataset {
-
-                                    println!("Copying dataset for bench: {}", results_file.file_name().unwrap().to_str().unwrap());
+                                    println!(
+                                        "Copying dataset for bench: {}",
+                                        results_file.file_name().unwrap().to_str().unwrap()
+                                    );
 
                                     dataset_copied = true;
 
@@ -393,7 +407,12 @@ fn main() {
                                             .unwrap()
                                             .filter(|d| {
                                                 d.is_ok()
-                                                    && d.as_ref().unwrap().path().unwrap().extension().is_some()
+                                                    && d.as_ref()
+                                                        .unwrap()
+                                                        .path()
+                                                        .unwrap()
+                                                        .extension()
+                                                        .is_some()
                                             })
                                             .take(
                                                 dataset
@@ -436,14 +455,10 @@ fn main() {
                                     input_files = new_input_files
                                 }
 
-                                let temp_dir = tmp_workdir.as_ref().join(&format!(
-                                    "{}_{}_K{}_{}_T{}thr_temp",
-                                    dataset.name, working_dir.name, kval, tool.name, thread
-                                ));
-                                let out_dir = tmp_workdir.as_ref().join(&format!(
-                                    "{}_{}_K{}_{}_T{}thr_out",
-                                    dataset.name, working_dir.name, kval, tool.name, thread
-                                ));
+                                let temp_dir =
+                                    tmp_workdir.as_ref().join(&format!("{}thr_temp", base_name));
+                                let out_dir =
+                                    tmp_workdir.as_ref().join(&format!("{}thr_out", base_name));
                                 if temp_dir.exists()
                                     && temp_dir.read_dir().unwrap().next().is_some()
                                 {
@@ -481,26 +496,12 @@ fn main() {
                                         k: *kval,
                                         multiplicity: experiment.min_multiplicity,
                                         output_file: out_dir
-                                            .join(&format!(
-                                                "{}_{}_K{}_{}_T{}thr.fa",
-                                                dataset.name,
-                                                working_dir.name,
-                                                kval,
-                                                tool.name,
-                                                thread
-                                            ))
+                                            .join(&format!("{}thr.fa", base_name))
                                             .into_os_string()
                                             .into_string()
                                             .unwrap(),
                                         canonical_file: out_dir
-                                            .join(&format!(
-                                                "canonical_{}_{}_K{}_{}_T{}thr.fa",
-                                                dataset.name,
-                                                working_dir.name,
-                                                kval,
-                                                tool.name,
-                                                thread
-                                            ))
+                                            .join(&format!("canonical_{}thr.fa", base_name))
                                             .into_os_string()
                                             .into_string()
                                             .unwrap(),
@@ -509,10 +510,9 @@ fn main() {
                                             .into_os_string()
                                             .into_string()
                                             .unwrap(),
-                                        log_file: logs_dir.clone().join(&format!(
-                                            "{}_{}_K{}_{}_T{}.log",
-                                            dataset.name, working_dir.name, kval, tool.name, thread
-                                        )),
+                                        log_file: logs_dir
+                                            .clone()
+                                            .join(&format!("{}.log", base_name)),
                                         memory_gb: experiment.max_memory,
                                         size_check_time: Duration::from_millis(
                                             experiment.size_check_time,
@@ -526,10 +526,8 @@ fn main() {
                                     keep_temp_dir = true;
                                 }
 
-                                let final_out_dir = outputs_dir.join(&format!(
-                                    "{}_{}_K{}_{}_T{}thr_out",
-                                    dataset.name, working_dir.name, kval, tool.name, thread
-                                ));
+                                let final_out_dir =
+                                    outputs_dir.join(&format!("{}thr_out", base_name));
                                 create_dir_all(&final_out_dir).unwrap();
 
                                 if experiment.copy_output.unwrap_or(true) {
@@ -537,7 +535,8 @@ fn main() {
                                         let file = file.unwrap();
 
                                         let name = file.file_name();
-                                        std::fs::copy(file.path(), final_out_dir.join(name)).unwrap();
+                                        std::fs::copy(file.path(), final_out_dir.join(name))
+                                            .unwrap();
                                         std::fs::remove_file(file.path()).unwrap();
                                     }
                                 }
