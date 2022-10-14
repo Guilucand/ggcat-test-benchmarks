@@ -34,7 +34,7 @@ use-prefix-for-list = true
 [[tools]]
 name = "bifrost-k63-query"
 path = "../tools/Bifrost-k63"
-arguments = "build -k <KVALUE> -t <THREADS> -g <INPUT_GRAPH> -q <INPUT_QUERY>  -o <OUTPUT_FILE> --verbose"
+arguments = "query -k <KVALUE> -t <THREADS> -g <INPUT_GRAPH> -q <INPUT_QUERY>  -o <OUTPUT_FILE> --verbose"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
 use-prefix-for-list = true
@@ -42,7 +42,7 @@ use-prefix-for-list = true
 [[tools]]
 name = "bifrost-colored-k63-query"
 path = "../tools/Bifrost-k63"
-arguments = "build -k <KVALUE> -t <THREADS> -g <INPUT_GRAPH> -q <INPUT_QUERY> -f <INPUT_COLORS>  -o <OUTPUT_FILE> --verbose"
+arguments = "query -k <KVALUE> -t <THREADS> -g <INPUT_GRAPH> -q <INPUT_QUERY> -f <INPUT_COLORS>  -o <OUTPUT_FILE> --verbose"
 reads-arg-prefix = "-r"
 sequences-arg-prefix = "-s"
 use-prefix-for-list = true
