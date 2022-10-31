@@ -33,6 +33,7 @@ pub struct Parameters {
     pub log_file: PathBuf,
     pub memory_gb: Option<f64>,
     pub size_check_time: Duration,
+    pub query_files: (Option<String>, Option<String>),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -185,6 +186,16 @@ impl Runner {
                 "<MAX_MEMORY>",
                 vec![format!("{:.2}", parameters.memory_gb.unwrap_or(0.0))],
             ),
+            ("<INPUT_FILES>", input_files_string.clone()),
+            ("<INPUT_GRAPH>", input_files_string.clone()),
+            (
+                "<INPUT_QUERY>",
+                vec![parameters.query_files.0.clone().unwrap_or(String::new())],
+            ),
+            (
+                "<INPUT_COLORS>",
+                vec![parameters.query_files.1.clone().unwrap_or(String::new())],
+            ),
         ]
         .iter()
         .cloned()
@@ -320,7 +331,9 @@ impl Runner {
         };
 
         if let Some(result) = output_result {
-            canonical_kmers::canonicalize(&result, parameters.canonical_file, parameters.k);
+            if parameters.query_files.0.is_none() {
+                canonical_kmers::canonicalize(&result, parameters.canonical_file, parameters.k);
+            }
             has_completed = true;
         }
 

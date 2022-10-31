@@ -4,7 +4,8 @@ use std::borrow::Borrow;
 use std::cmp::max;
 use std::fs::File;
 use std::ops::Range;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::time::Duration;
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
@@ -12,6 +13,10 @@ pub struct TableMakerCli {
     #[structopt(long, short)]
     datasets: String,
     results_dirs: Vec<PathBuf>,
+    #[structopt(long, short)]
+    title: String,
+    #[structopt(long, short)]
+    seconds_time: bool,
 }
 
 struct LatexTableMaker {
@@ -21,6 +26,20 @@ struct LatexTableMaker {
 }
 
 const MULTIROW_ALIGNMENT: [f64; 4] = [0.0, -0.6, -1.3, -1.9];
+
+const REMAPPINGS: &[(&str, &str)] = &[
+    ("mother", "Human"),
+    ("gut", "Gut microbiome"),
+    ("salmonella-100k", "Salmonella archive (100K)"),
+    ("salmonella-all", "Salmonella archive (309K)"),
+    ("human-100", "100 Human genomes"),
+    ("human-100", "100 Human genomes"),
+    ("cuttlefish2", "Cuttlefish 2"),
+    ("bifrost", "BiFrost"),
+    ("bifrost-colored", "BiFrost colored"),
+    ("ggcat", "GGCAT"),
+    ("ggcat-colored", "GGCAT colored"),
+];
 
 impl LatexTableMaker {
     pub fn new() -> Self {
@@ -72,8 +91,9 @@ impl LatexTableMaker {
 
         let col_count = self.col_labels.len();
 
-        buffer.push_str("\\begin{figure}\n");
+        buffer.push_str("\\begin{table}\n");
         buffer.push_str("\\centering\n");
+        buffer.push_str(&format!("\\caption{{{}}}\n", title));
 
         buffer.push_str(&{
             let mut col_def = String::from(r#"\begin{tabular}{ |c|c||c"#);
@@ -92,7 +112,7 @@ impl LatexTableMaker {
         // buffer.push_str("\\hline\n");
         buffer.push_str("\\hline\n");
         buffer.push_str(&{
-            let mut col_names = String::from(r#"Dataset&K"#);
+            let mut col_names = String::from(r#"Dataset&$k$"#);
             for label in &self.col_labels {
                 col_names.push_str("&");
                 col_names.push_str(label);
@@ -127,7 +147,7 @@ impl LatexTableMaker {
                     for col_idx in 0..self.col_labels.len() {
                         row_content.push_str("&");
                         row_content.push_str(&format!(
-                            "\\cell{{{}\\\\({})}}",
+                            "\\cell{{{} ({})}}",
                             self.cells[row_idx][col_idx]
                                 .as_ref()
                                 .map(|x| x.0.clone())
@@ -146,11 +166,10 @@ impl LatexTableMaker {
             buffer.push_str("\\hline\n");
         }
 
-        buffer.push_str(r#"\end{tabular}"#);
+        buffer.push_str("\\end{tabular}\n");
 
-        buffer.push_str(&format!("\\caption{{{}}}\n", title));
         // buffer.push_str("\\label{fig:my_label}\n");
-        buffer.push_str("\\end{figure}\n");
+        buffer.push_str("\\end{table}\n");
 
         buffer
     }
@@ -158,6 +177,65 @@ impl LatexTableMaker {
 
 /*
 */
+
+#[derive(Clone, Ord, PartialOrd, Eq, PartialEq)]
+struct ParsedPath {
+    dataset: String,
+    wdir: String,
+    k: usize,
+    tool: String,
+    threads: usize,
+}
+
+fn remap(val: &str) -> String {
+    REMAPPINGS
+        .iter()
+        .find(|x| x.0 == val)
+        .map(|x| x.1)
+        .unwrap_or(val)
+        .to_string()
+}
+
+impl ParsedPath {
+    pub fn from_path(path: &str) -> Option<Self> {
+        if !path.ends_with("info.json") {
+            return None;
+        }
+
+        let file_name = path.split("/").last().unwrap();
+        let parts: Vec<_> = file_name.split("_").collect();
+
+        // {}_{}_K{}_{}_T{}thr-info.json
+        let dataset = parts[0].to_string();
+        let wdir = parts[1].to_string();
+        let k: usize = parts[2][1..].parse().unwrap();
+        let tool = parts[3].to_string();
+
+        let tool = tool.strip_suffix("-ref").unwrap_or(&tool);
+        let tool = tool.strip_suffix("-reads").unwrap_or(&tool);
+        let tool = tool
+            .strip_suffix(&format!("-k{}", k))
+            .unwrap_or(&tool)
+            .to_string();
+
+        let dataset = dataset
+            .strip_suffix(&format!("-{}", dataset))
+            .unwrap_or(&dataset)
+            .to_string();
+
+        let threads: usize = parts[4][1..(parts[4].len() - "thr-info.json".len())]
+            .parse()
+            .unwrap();
+
+        Some(Self {
+            dataset,
+            wdir,
+            k,
+            tool,
+            threads,
+        })
+    }
+}
 
 pub fn make_table(args: TableMakerCli) {
     let mut content: Vec<_> = args
@@ -174,7 +252,9 @@ pub fn make_table(args: TableMakerCli) {
 
     let mut table_maker = LatexTableMaker::new();
 
-    content.sort();
+    content.retain(|p| ParsedPath::from_path(p).is_some());
+    content.sort_by_cached_key(|p| ParsedPath::from_path(p).unwrap());
+
     for target_dataset in args.datasets.split(",") {
         let start_row = table_maker.row_labels.len();
 
@@ -183,17 +263,13 @@ pub fn make_table(args: TableMakerCli) {
                 continue;
             }
 
-            let file_name = file.split("/").last().unwrap();
-            let parts: Vec<_> = file_name.split("_").collect();
-
-            // {}_{}_K{}_{}_T{}thr-info.json
-            let dataset = parts[0];
-            let wdir = parts[1];
-            let k: usize = parts[2][1..].parse().unwrap();
-            let tool = parts[3];
-            let threads: usize = parts[4][1..(parts[4].len() - "thr-info.json".len())]
-                .parse()
-                .unwrap();
+            let ParsedPath {
+                dataset,
+                wdir,
+                k,
+                tool,
+                threads,
+            } = ParsedPath::from_path(&file).unwrap();
 
             if dataset != target_dataset {
                 continue;
@@ -201,14 +277,24 @@ pub fn make_table(args: TableMakerCli) {
 
             let results: RunResults = serde_json::from_reader(File::open(&file).unwrap()).unwrap();
 
+            let hours = (results.real_time_secs / 3600.0) as usize;
+            let minutes = ((results.real_time_secs / 60.0) % 60.0) as usize;
+            let seconds = ((results.real_time_secs) % 60.00) as usize;
+
+            let duration_string = if args.seconds_time {
+                format!("{}h:{}m:{}s", hours, minutes, seconds)
+            } else {
+                format!("{}h:{}m", hours, minutes)
+            };
+
             table_maker.add_sample(
-                dataset,
+                &remap(&dataset),
                 &k.to_string(),
-                tool,
+                &remap(&tool),
                 if results.has_completed {
                     (
-                        format!("{:.2}s", results.real_time_secs),
-                        Some(format!("{:.2}gb", results.max_memory_gb)),
+                        duration_string,
+                        Some(format!("{:.2}GB", results.max_memory_gb)),
                     )
                 } else {
                     ("crashed".to_string(), None)
@@ -226,8 +312,5 @@ pub fn make_table(args: TableMakerCli) {
         }
     }
 
-    println!(
-        "Table: \n{}",
-        table_maker.make_table(format!("Dataset: {}", "Caption TODO"))
-    );
+    println!("Table: \n{}", table_maker.make_table(args.title));
 }
