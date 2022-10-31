@@ -9,7 +9,7 @@ use std::path::Path;
 use std::process::exit;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-fn read_lines<'a, P>(
+fn read_fasta_lines<'a, P>(
     filename: P,
     buffer: &'a mut Vec<u8>,
 ) -> io::Result<Box<dyn Iterator<Item = &'a mut str> + 'a>>
@@ -40,11 +40,30 @@ where
 
         let last_position = position;
         let mut next_position = position;
-        while next_position < buffer.len() && buffer[next_position] != b'\n' {
+
+        let is_ident = buffer[position] == b'>';
+
+        let mut copy_index = next_position;
+
+        // Iterate one or more lines
+        while next_position < buffer.len() {
+            // Read a whole line (including the newline)
+            while next_position < buffer.len() && buffer[next_position] != b'\n' {
+                buffer[copy_index] = buffer[next_position];
+                copy_index += 1;
+                next_position += 1;
+            }
             next_position += 1;
+
+            if is_ident {
+                break;
+            } else if next_position < buffer.len() && buffer[next_position] == b'>' {
+                break;
+            }
         }
-        position = next_position + 1;
-        Some(std::str::from_utf8_mut(&mut buffer[last_position..next_position]).unwrap())
+
+        position = next_position;
+        Some(std::str::from_utf8_mut(&mut buffer[last_position..copy_index]).unwrap())
     })))
 }
 
@@ -97,7 +116,7 @@ pub fn canonicalize(input: impl AsRef<Path>, output: impl AsRef<Path>, k: usize)
 
     let mut buffer = Vec::new();
 
-    let mut sequences: Vec<_> = read_lines(&input, &mut buffer)
+    let mut sequences: Vec<_> = read_fasta_lines(&input, &mut buffer)
         .unwrap()
         .filter(|l| !l.starts_with(">"))
         .collect();
@@ -107,17 +126,17 @@ pub fn canonicalize(input: impl AsRef<Path>, output: impl AsRef<Path>, k: usize)
 
         total_kmers.fetch_add((str_bytes.len() - k + 1) as u64, Ordering::Relaxed);
 
+        if str_bytes.len() < k {
+            println!("Sequence: {} has length less than k, aborting!", el);
+            exit(1);
+        }
+
         // Circular normalization
         if &str_bytes[..(k - 1)] == &str_bytes[(str_bytes.len() - (k - 1))..] {
             let mut canonical = el.to_string();
             process_string(unsafe { canonical.as_bytes_mut() });
 
             let mut deque = VecDeque::from_iter(str_bytes.iter().map(|x| *x));
-
-            if deque.len() < k {
-                println!("Sequence: {} has length less than k, aborting!", el);
-                exit(1);
-            }
 
             for _ in 0..str_bytes.len() {
                 // Roll the sequence by 1 left
