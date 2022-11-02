@@ -332,7 +332,12 @@ impl Runner {
 
         if let Some(result) = output_result {
             if parameters.query_files.0.is_none() {
-                canonical_kmers::canonicalize(&result, parameters.canonical_file, parameters.k);
+                canonical_kmers::canonicalize(
+                    &result,
+                    parameters.canonical_file,
+                    parameters.k,
+                    false,
+                );
             }
             has_completed = true;
         }

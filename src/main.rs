@@ -47,6 +47,9 @@ struct CanonicalizeCli {
 
     #[structopt(short, long)]
     force: bool,
+
+    #[structopt(short, long)]
+    links: bool,
 }
 
 #[derive(StructOpt)]
@@ -566,7 +569,7 @@ fn main() {
                 println!("File {} already exists!", args.output.display());
             }
 
-            canonical_kmers::canonicalize(args.input, args.output, args.kval);
+            canonical_kmers::canonicalize(args.input, args.output, args.kval, args.links);
         }
         ExtendedCli::MakeTable(args) => make_table(args),
     }
