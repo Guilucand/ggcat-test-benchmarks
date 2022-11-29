@@ -30,6 +30,8 @@ pub struct Dataset {
     pub lists: Option<Vec<PathBuf>>,
     pub tar: Option<PathBuf>,
     pub limit: Option<usize>,
+    pub query: Option<String>,
+    pub colorfile: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -54,7 +56,7 @@ pub struct Benchmark {
     #[serde(rename = "size-check-time")]
     pub size_check_time: u64,
     #[serde(rename = "copy-output")]
-    pub copy_output: Option<bool>
+    pub copy_output: Option<bool>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
