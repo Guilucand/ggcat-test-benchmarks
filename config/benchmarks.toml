@@ -99,9 +99,9 @@ copy-output = false
 
 [[benchmarks]]
 name = "article-test-g"
-datasets = ["human-100"]
+datasets = ["human-50-nvme"]
 tools = ["ggcat"]
-working-dirs = ["ssd"]
+working-dirs = ["nvme"]
 copy-dataset = false
 kvalues = [63]
 threads = [16]
@@ -109,6 +109,17 @@ min-multiplicity = 1
 size-check-time = 2000
 copy-output = false
 
+[[benchmarks]]
+name = "article-test-h"
+datasets = ["bacterial-genomes"]
+tools = ["ggcat-colored", "bifrost-colored"]
+working-dirs = ["hdd"]
+copy-dataset = false 
+kvalues = [27, 63]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 2000
+copy-output = true
 
 [[benchmarks]]
 name = "salmonella-small"
@@ -297,7 +308,7 @@ copy-output = true
 [[benchmarks]]
 name = "human-colored-query-1-bifrost27"
 datasets = ["human-100-cq1-bifrost-colored-k27-query"]
-tools = ["bifrost-colored-k27-query"]
+tools = ["bifrost-colored-query"]
 working-dirs = ["ssd"]
 copy-dataset = false
 kvalues = [27]
@@ -321,7 +332,7 @@ copy-output = true
 [[benchmarks]]
 name = "human-query-1-bifrost27"
 datasets = ["human-100-q1-bifrost-k27-query"]
-tools = ["bifrost-k27-query"]
+tools = ["bifrost-query"]
 working-dirs = ["ssd"]
 copy-dataset = false
 kvalues = [27]
