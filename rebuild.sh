@@ -9,7 +9,8 @@ pushd building/
 
     pushd ggcat/
         git pull
-    	git checkout main
+    	git checkout dev
+	git pull
         cargo build --release --features "process-stats"
         cp ./target/release/ggcat ../../tools/ggcat -f
         # cargo build --release --features "build-links,process-stats"
