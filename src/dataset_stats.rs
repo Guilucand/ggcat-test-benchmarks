@@ -112,8 +112,6 @@ pub fn compute_dataset_stats(args: DatasetStatsCli) {
         .map(|_| AtomicU64::new(0))
         .collect::<Vec<_>>();
 
-    let logging_steps = (input_files.len() / 20) + 1;
-
     if let Some(tarball) = &dataset.tar {
         println!("Unpacking tarball: {}", tarball.display());
         for entry in tar::Archive::new(File::open(tarball).unwrap())
@@ -137,6 +135,10 @@ pub fn compute_dataset_stats(args: DatasetStatsCli) {
             input_files.push(dest_file);
         }
     }
+
+    let logging_steps = (input_files.len() / 20) + 1;
+
+    println!("Starting processing...");
 
     input_files.into_par_iter().for_each(|file| {
         let mut update_counters = |seq: &[u8]| {
