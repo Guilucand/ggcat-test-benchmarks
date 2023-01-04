@@ -1,5 +1,6 @@
 #![allow(warnings)]
 pub mod config;
+mod dataset_stats;
 mod dir_cleanup;
 pub mod runner;
 mod stats;
@@ -11,6 +12,7 @@ use crate::runner::{Parameters, RunResults, Runner};
 use crate::table_maker::{make_table, TableMakerCli};
 use cgroups_rs::cgroup_builder::CgroupBuilder;
 use cgroups_rs::Cgroup;
+use dataset_stats::compute_dataset_stats;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use std::env::current_dir;
@@ -32,10 +34,20 @@ enum ExtendedCli {
     Bench(Cli),
     MakeTable(TableMakerCli),
     Canonicalize(CanonicalizeCli),
+    DatasetStats(DatasetStatsCli),
 }
 
 #[derive(StructOpt)]
 struct StartOpt {}
+
+#[derive(StructOpt)]
+pub struct DatasetStatsCli {
+    pub dataset: String,
+    pub experiments: Vec<PathBuf>,
+
+    #[structopt(short, long, default_value = "config/local.toml")]
+    env_config: PathBuf,
+}
 
 #[derive(StructOpt)]
 struct CanonicalizeCli {
@@ -99,6 +111,15 @@ fn filter_options<T>(
             }
         })
         .collect()
+}
+
+pub(crate) fn parse_toml<T: DeserializeOwned>(file: PathBuf) -> T {
+    let mut settings_text = String::new();
+    File::open(&file)
+        .unwrap()
+        .read_to_string(&mut settings_text)
+        .unwrap();
+    toml::from_str(&settings_text).unwrap()
 }
 
 fn main() {
@@ -175,15 +196,6 @@ fn main() {
                     .unwrap()
                     .to_path_buf()
             };
-
-            fn parse_toml<T: DeserializeOwned>(file: PathBuf) -> T {
-                let mut settings_text = String::new();
-                File::open(&file)
-                    .unwrap()
-                    .read_to_string(&mut settings_text)
-                    .unwrap();
-                toml::from_str(&settings_text).unwrap()
-            }
 
             all_settings
                 .tools
@@ -572,5 +584,6 @@ fn main() {
             canonical_kmers::canonicalize(args.input, args.output, args.kval, args.links);
         }
         ExtendedCli::MakeTable(args) => make_table(args),
+        ExtendedCli::DatasetStats(args) => compute_dataset_stats(args),
     }
 }
