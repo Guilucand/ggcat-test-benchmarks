@@ -47,6 +47,7 @@ pub struct RunResults {
     pub total_written_gb: f64,
     pub total_read_gb: f64,
     pub max_used_disk_gb: f64,
+    pub output_file_sizes: Vec<(String, (u64, f64))>,
     pub has_completed: bool,
 }
 
@@ -259,6 +260,7 @@ impl Runner {
             .parent()
             .unwrap()
             .to_path_buf();
+        let out_dir_for_final_size = out_dir_thr.clone();
 
         let maximum_disk_usage = Arc::new(AtomicU64::new(0));
         let maximum_rss_usage = Arc::new(AtomicU64::new(0));
@@ -356,6 +358,21 @@ impl Runner {
             total_read_gb: rusage.ru_inblock as f64 / 2048.0 / 1024.0,
             max_used_disk_gb: maximum_disk_usage.load(Ordering::Relaxed) as f64
                 / (1024.0 * 1024.0 * 1024.0),
+            output_file_sizes: WalkDir::new(out_dir_for_final_size)
+                .into_iter()
+                .filter_map(|p| p.ok())
+                .filter_map(|file| {
+                    let metadata = file.metadata().ok()?;
+                    let path = file.path();
+                    let size = metadata.len();
+
+                    Some((
+                        path.to_string_lossy().into_owned(),
+                        (size, size as f64 / (1024.0 * 1024.0)),
+                    ))
+                })
+                .collect(),
+
             has_completed,
         }
     }
