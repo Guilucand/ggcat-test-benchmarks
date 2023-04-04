@@ -1,0 +1,78 @@
+[[datasets]]
+name = "salmonella-10"
+tar = "/data/genome-data/salmonella-strains.tar"
+limit = 10
+
+[[datasets]]
+name = "salmonella-100"
+tar = "/data/genome-data/salmonella-strains.tar"
+limit = 100
+
+[[datasets]]
+name = "salmonella-1k"
+tar = "/data/genome-data/salmonella-strains.tar"
+limit = 1000
+
+[[datasets]]
+name = "salmonella-5k"
+tar = "/data/genome-data/salmonella-strains.tar"
+limit = 5000
+
+
+[[datasets]]
+name = "salmonella-10k"
+tar = "/data/genome-data/salmonella-strains.tar"
+limit = 10000
+
+
+[[datasets]]
+name = "salmonella-50k"
+tar = "/data/genome-data/salmonella-strains.tar"
+limit = 50000
+
+
+[[datasets]]
+name = "salmonella-100k"
+tar = "/data/genome-data/salmonella-strains.tar"
+limit = 100000
+
+
+[[datasets]]
+name = "salmonella-all"
+tar = "/data/genome-data/salmonella-strains.tar"
+
+[[datasets]]
+name = "bacterial-genomes"
+lists = ["/data/genome-data/lists/bacterial-genomes.in"]
+
+[[datasets]]
+name = "father"
+lists = ["/data/genome-data/lists/father.in"]
+
+[[datasets]]
+name = "mother"
+lists = ["/data/genome-data/lists/mother.in"]
+
+[[datasets]]
+name = "human-dbjs"
+files = [
+    "/data/genome-data/human-dbjs/father.fa",
+    "/data/genome-data/human-dbjs/mother.fa",
+]
+
+[[datasets]]
+name = "gut"
+lists = ["/data/genome-data/lists/gut.in"]
+
+
+[[working-dirs]]
+name = "ram"
+path = "../working-dirs/ram/benchmark-workdir"
+
+[[working-dirs]]
+name = "hdd"
+path = "../working-dirs/hdd/benchmark-workdir"
+
+[[working-dirs]]
+name = "ssd"
+path = "../working-dirs/ssd/benchmark-workdir"
