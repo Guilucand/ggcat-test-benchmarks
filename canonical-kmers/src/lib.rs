@@ -10,7 +10,7 @@ use std::path::Path;
 use std::process::exit;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-fn read_fasta_lines<'a, P>(
+pub fn read_fasta_lines<'a, P>(
     filename: P,
     buffer: &'a mut Vec<u8>,
 ) -> io::Result<Box<dyn Iterator<Item = &'a mut str> + 'a>>
@@ -78,7 +78,7 @@ fn rcb(base: u8) -> u8 {
     }
 }
 
-fn reverse_complement(s: &mut [u8]) {
+pub fn reverse_complement(s: &mut [u8]) {
     s.reverse();
     s.iter_mut().for_each(|x| *x = rcb(*x));
 }

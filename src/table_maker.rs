@@ -17,9 +17,11 @@ pub struct TableMakerCli {
     title: String,
     #[structopt(long, short)]
     seconds_time: bool,
+    #[structopt(long)]
+    typst: bool,
 }
 
-struct LatexTableMaker {
+struct TableMaker {
     cells: Vec<Vec<Option<(String, Option<String>)>>>,
     row_labels: Vec<(String, String)>,
     col_labels: Vec<String>,
@@ -41,7 +43,7 @@ const REMAPPINGS: &[(&str, &str)] = &[
     ("ggcat-colored", "GGCAT colored"),
 ];
 
-impl LatexTableMaker {
+impl TableMaker {
     pub fn new() -> Self {
         Self {
             cells: vec![],
@@ -84,7 +86,92 @@ impl LatexTableMaker {
         self.cells[row_idx][col_idx] = Some(values);
     }
 
-    pub fn make_table(&self, title: String) -> String {
+    pub fn make_typst_table(&self, title: String) -> String {
+        let mut buffer = String::new();
+
+        assert!(self.col_labels.len() > 0);
+
+        let col_count = self.col_labels.len();
+
+        buffer.push_str("#figure(\n");
+        buffer.push_str(&format!("\tcaption:[\n{}\t\n],\n", title));
+        buffer.push_str("\ttable(\n");
+        buffer.push_str(&format!("\t\tcolumns: {},\n", col_count + 2));
+
+        buffer.push_str(&{
+            let mut col_def = String::from(r#"\t\talign: (left, center"#);
+            for _ in 0..(col_count - 1) {
+                col_def.push_str(", center");
+            }
+            col_def.push_str("),\n");
+            col_def
+        });
+
+        buffer.push_str(&{
+            let mut col_names = String::from(r#"\t\ttable.header([Dataset], [$k$]"#);
+            for label in &self.col_labels {
+                col_names.push_str(", [");
+                col_names.push_str(&label.replace('#', "\\#"));
+                col_names.push_str("]");
+            }
+            col_names.push_str("),\n");
+            col_names
+        });
+
+        // FROM HERE!
+        for (dataset_name, dataset_section) in self
+            .row_labels
+            .iter()
+            .enumerate()
+            .group_by(|x| x.1 .0.clone())
+            .into_iter()
+        {
+            let dataset_section: Vec<_> = dataset_section.map(|d| d.0).collect();
+
+            let subrows_count = dataset_section.len();
+            buffer.push_str(&format!(
+                "\\multirow{{{}}}{{*}}[{}em]{{{}}}",
+                subrows_count,
+                MULTIROW_ALIGNMENT[subrows_count - 1],
+                dataset_name
+            ));
+
+            for row_idx in dataset_section.clone() {
+                buffer.push_str(&{
+                    let mut row_content = String::from("&");
+                    row_content.push_str(&self.row_labels[row_idx].1);
+
+                    for col_idx in 0..self.col_labels.len() {
+                        row_content.push_str("&");
+                        row_content.push_str(&format!(
+                            "\\cell{{{} ({})}}",
+                            self.cells[row_idx][col_idx]
+                                .as_ref()
+                                .map(|x| x.0.clone())
+                                .unwrap_or(String::new()),
+                            self.cells[row_idx][col_idx]
+                                .as_ref()
+                                .map(|x| x.1.as_ref().unwrap_or(&String::new()).clone())
+                                .unwrap_or(String::new()),
+                        ));
+                    }
+                    row_content
+                        .push_str(&format!("\\\\\\cline{{2-{}}}\n", self.col_labels.len() + 2));
+                    row_content
+                });
+            }
+            buffer.push_str("\\hline\n");
+        }
+
+        buffer.push_str("\\end{tabular}\n");
+
+        // buffer.push_str("\\label{fig:my_label}\n");
+        buffer.push_str(")\n");
+
+        buffer
+    }
+
+    pub fn make_latex_table(&self, title: String) -> String {
         let mut buffer = String::new();
 
         assert!(self.col_labels.len() > 0);
@@ -250,7 +337,7 @@ pub fn make_table(args: TableMakerCli) {
         .flatten()
         .collect();
 
-    let mut table_maker = LatexTableMaker::new();
+    let mut table_maker = TableMaker::new();
 
     content.retain(|p| ParsedPath::from_path(p).is_some());
     content.sort_by_cached_key(|p| ParsedPath::from_path(p).unwrap());
@@ -312,5 +399,12 @@ pub fn make_table(args: TableMakerCli) {
         }
     }
 
-    println!("Table: \n{}", table_maker.make_table(args.title));
+    println!(
+        "Table: \n{}",
+        if args.typst {
+            table_maker.make_typst_table(args.title)
+        } else {
+            table_maker.make_latex_table(args.title)
+        }
+    );
 }

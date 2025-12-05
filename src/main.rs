@@ -1,7 +1,9 @@
 #![allow(warnings)]
+pub mod compare_eulertigs;
 pub mod config;
 mod dataset_stats;
 mod dir_cleanup;
+pub mod randomize_fasta;
 pub mod runner;
 mod stats;
 mod table_maker;
@@ -12,7 +14,9 @@ use crate::runner::{Parameters, RunResults, Runner};
 use crate::table_maker::{make_table, TableMakerCli};
 use cgroups_rs::cgroup_builder::CgroupBuilder;
 use cgroups_rs::Cgroup;
+use compare_eulertigs::compare_eulertigs;
 use dataset_stats::compute_dataset_stats;
+use randomize_fasta::randomize_fasta;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use std::env::current_dir;
@@ -35,6 +39,8 @@ enum ExtendedCli {
     MakeTable(TableMakerCli),
     Canonicalize(CanonicalizeCli),
     DatasetStats(DatasetStatsCli),
+    CompareEulertigs(CanonicalEulertigsCompareCli),
+    RandomizeFasta(RandomizeFastaCli),
 }
 
 #[derive(StructOpt)]
@@ -50,6 +56,15 @@ pub struct DatasetStatsCli {
 }
 
 #[derive(StructOpt)]
+struct CanonicalEulertigsCompareCli {
+    first: PathBuf,
+    second: PathBuf,
+
+    #[structopt(short, long)]
+    kval: usize,
+}
+
+#[derive(StructOpt)]
 struct CanonicalizeCli {
     input: PathBuf,
     output: PathBuf,
@@ -62,6 +77,12 @@ struct CanonicalizeCli {
 
     #[structopt(short, long)]
     links: bool,
+}
+
+#[derive(StructOpt)]
+struct RandomizeFastaCli {
+    input: PathBuf,
+    output: PathBuf,
 }
 
 #[derive(StructOpt)]
@@ -585,5 +606,7 @@ fn main() {
         }
         ExtendedCli::MakeTable(args) => make_table(args),
         ExtendedCli::DatasetStats(args) => compute_dataset_stats(args),
+        ExtendedCli::CompareEulertigs(args) => compare_eulertigs(args),
+        ExtendedCli::RandomizeFasta(args) => randomize_fasta(args),
     }
 }
