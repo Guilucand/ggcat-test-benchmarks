@@ -22,7 +22,7 @@ pub struct TableMakerCli {
 }
 
 struct TableMaker {
-    cells: Vec<Vec<Option<(String, Option<String>)>>>,
+    cells: Vec<Vec<Option<(String, Option<String>, Option<String>)>>>,
     row_labels: Vec<(String, String)>,
     col_labels: Vec<String>,
 }
@@ -69,7 +69,7 @@ impl TableMaker {
         row: &str,
         sub_row: &str,
         col: &str,
-        values: (String, Option<String>),
+        values: (String, Option<String>, Option<String>),
     ) {
         let row_idx = Self::find_el(
             &mut self.row_labels,
@@ -94,13 +94,13 @@ impl TableMaker {
         let col_count = self.col_labels.len();
 
         buffer.push_str("#figure(\n");
-        buffer.push_str(&format!("\tcaption:[\n{}\t\n],\n", title));
+        buffer.push_str(&format!("\tcaption: [{}],\n", title));
         buffer.push_str("\ttable(\n");
         buffer.push_str(&format!("\t\tcolumns: {},\n", col_count + 2));
 
         buffer.push_str(&{
-            let mut col_def = String::from(r#"\t\talign: (left, center"#);
-            for _ in 0..(col_count - 1) {
+            let mut col_def = String::from("\t\talign: (left, center");
+            for _ in 0..col_count {
                 col_def.push_str(", center");
             }
             col_def.push_str("),\n");
@@ -108,7 +108,7 @@ impl TableMaker {
         });
 
         buffer.push_str(&{
-            let mut col_names = String::from(r#"\t\ttable.header([Dataset], [$k$]"#);
+            let mut col_names = String::from("\t\ttable.header([Dataset], [$k$]");
             for label in &self.col_labels {
                 col_names.push_str(", [");
                 col_names.push_str(&label.replace('#', "\\#"));
@@ -118,7 +118,6 @@ impl TableMaker {
             col_names
         });
 
-        // FROM HERE!
         for (dataset_name, dataset_section) in self
             .row_labels
             .iter()
@@ -130,21 +129,22 @@ impl TableMaker {
 
             let subrows_count = dataset_section.len();
             buffer.push_str(&format!(
-                "\\multirow{{{}}}{{*}}[{}em]{{{}}}",
+                "\t\ttable.cell(rowspan: {}, [{}]),\n",
                 subrows_count,
-                MULTIROW_ALIGNMENT[subrows_count - 1],
+                // MULTIROW_ALIGNMENT[subrows_count - 1],
                 dataset_name
             ));
 
             for row_idx in dataset_section.clone() {
                 buffer.push_str(&{
-                    let mut row_content = String::from("&");
+                    let mut row_content = String::new();
+                    row_content.push_str("\t\t[");
                     row_content.push_str(&self.row_labels[row_idx].1);
+                    row_content.push_str("],");
 
                     for col_idx in 0..self.col_labels.len() {
-                        row_content.push_str("&");
                         row_content.push_str(&format!(
-                            "\\cell{{{} ({})}}",
+                            " [{} ({}) [{}]],",
                             self.cells[row_idx][col_idx]
                                 .as_ref()
                                 .map(|x| x.0.clone())
@@ -153,17 +153,24 @@ impl TableMaker {
                                 .as_ref()
                                 .map(|x| x.1.as_ref().unwrap_or(&String::new()).clone())
                                 .unwrap_or(String::new()),
+                            self.cells[row_idx][col_idx]
+                                .as_ref()
+                                .map(|x| x.2.as_ref().unwrap_or(&String::new()).clone())
+                                .unwrap_or(String::new()),
                         ));
                     }
-                    row_content
-                        .push_str(&format!("\\\\\\cline{{2-{}}}\n", self.col_labels.len() + 2));
+                    row_content.push_str("\n");
+                    // row_content
+                    //     .push_str(&format!("\\\\\\cline{{2-{}}}\n", self.col_labels.len() + 2));
                     row_content
                 });
             }
-            buffer.push_str("\\hline\n");
-        }
 
-        buffer.push_str("\\end{tabular}\n");
+            // buffer.push_str("\\hline\n");
+        }
+        buffer.push_str("\t)\n");
+
+        // buffer.push_str("\\end{tabular}\n");
 
         // buffer.push_str("\\label{fig:my_label}\n");
         buffer.push_str(")\n");
@@ -382,9 +389,10 @@ pub fn make_table(args: TableMakerCli) {
                     (
                         duration_string,
                         Some(format!("{:.2}GB", results.max_memory_gb)),
+                        Some(format!("{:.2}GB", results.max_used_disk_gb)),
                     )
                 } else {
-                    ("crashed".to_string(), None)
+                    ("crashed".to_string(), None, None)
                 },
             );
 

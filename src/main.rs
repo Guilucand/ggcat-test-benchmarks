@@ -1,9 +1,9 @@
 #![allow(warnings)]
-pub mod compare_eulertigs;
+// pub mod compare_eulertigs;
 pub mod config;
 mod dataset_stats;
 mod dir_cleanup;
-pub mod randomize_fasta;
+// pub mod randomize_fasta;
 pub mod runner;
 mod stats;
 mod table_maker;
@@ -14,9 +14,9 @@ use crate::runner::{Parameters, RunResults, Runner};
 use crate::table_maker::{make_table, TableMakerCli};
 use cgroups_rs::cgroup_builder::CgroupBuilder;
 use cgroups_rs::Cgroup;
-use compare_eulertigs::compare_eulertigs;
+// use compare_eulertigs::compare_eulertigs;
 use dataset_stats::compute_dataset_stats;
-use randomize_fasta::randomize_fasta;
+// use randomize_fasta::randomize_fasta;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use std::env::current_dir;
@@ -606,7 +606,7 @@ fn main() {
         }
         ExtendedCli::MakeTable(args) => make_table(args),
         ExtendedCli::DatasetStats(args) => compute_dataset_stats(args),
-        ExtendedCli::CompareEulertigs(args) => compare_eulertigs(args),
-        ExtendedCli::RandomizeFasta(args) => randomize_fasta(args),
+        ExtendedCli::CompareEulertigs(args) => todo!(), // compare_eulertigs(args),
+        ExtendedCli::RandomizeFasta(args) => todo!(),   // randomize_fasta(args),
     }
 }
