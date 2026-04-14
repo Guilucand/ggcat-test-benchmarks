@@ -1,0 +1,29 @@
+
+[[datasets]]
+name = "ecoli"
+lists = ["config/lists/ecoli.in"]
+
+[[datasets]]
+name = "human100"
+tar = "/home/ad/turso/wrk-vakka/users/sebschmi/matchtigs/genomes/ghuman_pangenome-c100-i0-e0/reference-all-colored.tar"
+
+[[datasets]]
+name = "human2505"
+tar = "/home/ad/turso/wrk-vakka/users/sebschmi/matchtigs/genomes/ghuman_pangenome-c2505-i0-e0/reference-all-colored.tar"
+
+[[datasets]]
+name = "salmonella-550k"
+lists = ["config/lists/salmonella-550k.in"]
+
+[[datasets]]
+name = "ena-bacteria"
+tar = "/home/ad/turso/wrk-vakka/users/sebschmi/matchtigs/genomes/gena_bacteria-c1-i0-e0/reference-all-colored.tar"
+
+[[datasets]]
+name = "all-the-bacteria"
+tar = "/home/ad/turso/wrk-vakka/users/sebschmi/matchtigs/genomes/gall_the_bacteria-c888-i0-e0/reference-all-colored.tar"
+
+
+[[working-dirs]]
+name = "bench-hdd"
+path = "/abga/acracco/bench-tempdir/benchmark-workdir"
