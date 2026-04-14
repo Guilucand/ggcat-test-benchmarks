@@ -11,6 +11,7 @@ pushd building/
     git clone https://github.com/pmelsted/bifrost
     git clone https://github.com/pmelsted/bifrost bifrost-k63
     git clone https://github.com/COMBINE-lab/cuttlefish cuttlefish2
+    git clone https://github.com/COMBINE-lab/cuttlefish3 cuttlefish3
 
     pushd ggcat/
         git pull
@@ -53,8 +54,17 @@ pushd building/
         cmake .. -DINSTANCE_COUNT=256
         make -j
     popd
+
+    pushd cuttlefish3/
+        git pull
+        mkdir build
+        cd build
+        cmake ..
+        make -j
+    popd
 popd
 
 cp building/bifrost/build/src/Bifrost tools/ -f
 cp building/bcalm/build/bcalm tools/ -f
 cp building/cuttlefish2/build/src/cuttlefish tools/ -f
+cp building/cuttlefish3/build/src/cuttlefish tools/cuttlefish3 -f

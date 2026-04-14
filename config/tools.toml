@@ -105,3 +105,8 @@ name = "ggcat-ram"
 path = "../tools/ggcat"
 arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --prefer-memory"
 
+[[tools]]
+name = "cuttlefish3-ref"
+path = "../tools/cuttlefish3"
+arguments = "build --refs -l <INPUT_FILES_LIST> -k <KVALUE> -t <THREADS> -o <OUTPUT_FILE> -w <TEMP_DIR> -m <MAX_MEMORY>"
+
