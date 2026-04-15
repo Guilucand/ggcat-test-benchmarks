@@ -40,10 +40,7 @@ pushd building/
     [ -d bifrost ]     || git clone https://github.com/pmelsted/bifrost
     [ -d bifrost-k63 ] || git clone https://github.com/pmelsted/bifrost bifrost-k63
     [ -d cuttlefish2 ] || git clone https://github.com/COMBINE-lab/cuttlefish cuttlefish2
-    if [ ! -d cuttlefish3 ]; then
-        git clone https://github.com/COMBINE-lab/cuttlefish3 cuttlefish3 \
-            || git clone https://github.com/COMBINE-lab/cuttlefish cuttlefish3
-    fi
+    [ -d cuttlefish3 ] || git clone --branch cuttlefish3 https://github.com/COMBINE-lab/cuttlefish cuttlefish3
 
     if [ ! -f ../tools/ggcat ]; then
         pushd ggcat/
