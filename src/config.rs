@@ -43,6 +43,8 @@ pub struct Benchmark {
     pub working_dirs: Vec<String>,
     #[serde(rename = "copy-dataset")]
     pub copy_dataset: bool,
+    #[serde(rename = "filter-short-sequences")]
+    pub filter_short_sequences: Option<bool>,
     #[serde(rename = "trim-before")]
     pub trim_before: Option<bool>,
     #[serde(rename = "keep-temp")]

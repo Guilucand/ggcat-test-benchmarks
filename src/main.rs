@@ -428,6 +428,7 @@ fn main() {
                     let dataset_dir = tmp_workdir.as_ref().join("dataset");
                     create_dir(&dataset_dir);
                     let min_k = *experiment.kvalues.iter().min().unwrap() as usize;
+                    let filter_short = experiment.filter_short_sequences.unwrap_or(false);
 
                     let threads = if let Some(threads) = &args.threads {
                         threads.split(",").map(|t| t.parse().unwrap()).collect()
@@ -498,7 +499,9 @@ fn main() {
                                             let dest_file = dataset_dir.join(file_name);
 
                                             entry.unpack(&dest_file).unwrap();
-                                            filter_fasta_min_length(&dest_file, min_k);
+                                            if filter_short {
+                                                filter_fasta_min_length(&dest_file, min_k);
+                                            }
                                             input_files.push(dest_file);
                                         }
                                     }
@@ -521,7 +524,9 @@ fn main() {
                                             file.display(),
                                             new_file.display()
                                         ));
-                                        filter_fasta_min_length(&new_file, min_k);
+                                        if filter_short {
+                                            filter_fasta_min_length(&new_file, min_k);
+                                        }
                                     }
 
                                     input_files = new_input_files
