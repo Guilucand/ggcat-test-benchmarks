@@ -1,4 +1,33 @@
 
+# Append GCC 13 compatibility fixes to cuttlefish's KMC patch file if not already present.
+# KMC 3.2.1 is missing <stdexcept> in critical_error_handler.h and <cstdint> in kff_writer.h.
+patch_kmc_for_gcc13() {
+    local patchfile="$1"
+    grep -q "stdexcept" "$patchfile" && return  # already patched
+    cat >> "$patchfile" << 'PATCH'
+diff --git a/kmc_core/critical_error_handler.h b/kmc_core/critical_error_handler.h
+--- a/kmc_core/critical_error_handler.h
++++ b/kmc_core/critical_error_handler.h
+@@ -1,6 +1,7 @@
+ #pragma once
+
+ #include <set>
+ #include <mutex>
++#include <stdexcept>
+ #include "thread_cancellation_exception.h" //TODO: moze ten wyjatek zdefiniowac tutaj?
+ #include <condition_variable>
+diff --git a/kmc_core/kff_writer.h b/kmc_core/kff_writer.h
+--- a/kmc_core/kff_writer.h
++++ b/kmc_core/kff_writer.h
+@@ -1,4 +1,5 @@
+ #pragma once
+
++#include <cstdint>
+ #include <string>
+ #include <vector>
+PATCH
+}
+
 cargo build --release
 
 mkdir -p building/
@@ -58,6 +87,7 @@ pushd building/
     if [ ! -f ../tools/cuttlefish ]; then
         pushd cuttlefish2/
             git pull
+            patch_kmc_for_gcc13 patches/kmc_patch.diff
             mkdir -p build && cd build
             cmake .. -DINSTANCE_COUNT=256
             make -j
@@ -68,6 +98,7 @@ pushd building/
     if [ ! -f ../tools/cuttlefish3 ]; then
         pushd cuttlefish3/
             git pull
+            patch_kmc_for_gcc13 patches/kmc_patch.diff
             mkdir -p build && cd build
             cmake ..
             make -j
