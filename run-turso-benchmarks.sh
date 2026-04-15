@@ -33,6 +33,12 @@ else
     log "  salmonella-550k.in written ($(wc -l < config/lists/salmonella-550k.in) entries)"
 fi
 
+log "Installing tool wrappers..."
+mkdir -p tools
+cp scripts/cuttlefish3-wrapper.sh tools/cuttlefish3
+chmod +x tools/cuttlefish3
+log "Wrappers installed."
+
 log "Building benchmark runner..."
 cargo build --release
 log "Build complete."
