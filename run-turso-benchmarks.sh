@@ -10,20 +10,28 @@ log "Generating file lists..."
 mkdir -p config/lists
 
 # ecoli: 3681 reference files named reference-0.fa .. reference-3680.fa
-log "  Building ecoli file list (3681 files)..."
-ECOLI_DIR="/home/ad/turso/wrk-vakka/users/sebschmi/matchtigs/genomes/gecoli3681-c3681-i0-e0"
-for i in $(seq 0 3680); do
-    echo "${ECOLI_DIR}/reference-${i}.fa"
-done > config/lists/ecoli.in
-log "  ecoli.in written ($(wc -l < config/lists/ecoli.in) entries)"
+if [ -f config/lists/ecoli.in ]; then
+    log "  ecoli.in already exists ($(wc -l < config/lists/ecoli.in) entries), skipping"
+else
+    log "  Building ecoli file list (3681 files)..."
+    ECOLI_DIR="/home/ad/turso/wrk-vakka/users/sebschmi/matchtigs/genomes/gecoli3681-c3681-i0-e0"
+    for i in $(seq 0 3680); do
+        echo "${ECOLI_DIR}/reference-${i}.fa"
+    done > config/lists/ecoli.in
+    log "  ecoli.in written ($(wc -l < config/lists/ecoli.in) entries)"
+fi
 
 # salmonella-550k: fasta files spread across 550 subdirectories
-log "  Building salmonella-550k file list (scanning 550 dirs)..."
-SALMONELLA_BASE="/home/ad/turso/wrk-vakka/users/sebschmi/matchtigs/downloads/enterobase_salmonella"
-for i in $(seq 0 549); do
-    find "${SALMONELLA_BASE}/extracted_cleaned_${i}/" -type f \( -name "*.fa" -o -name "*.fasta" \)
-done > config/lists/salmonella-550k.in
-log "  salmonella-550k.in written ($(wc -l < config/lists/salmonella-550k.in) entries)"
+if [ -f config/lists/salmonella-550k.in ]; then
+    log "  salmonella-550k.in already exists ($(wc -l < config/lists/salmonella-550k.in) entries), skipping"
+else
+    log "  Building salmonella-550k file list (scanning 550 dirs)..."
+    SALMONELLA_BASE="/home/ad/turso/wrk-vakka/users/sebschmi/matchtigs/downloads/enterobase_salmonella"
+    for i in $(seq 0 549); do
+        find "${SALMONELLA_BASE}/extracted_cleaned_${i}/" -type f \( -name "*.fa" -o -name "*.fasta" \)
+    done > config/lists/salmonella-550k.in
+    log "  salmonella-550k.in written ($(wc -l < config/lists/salmonella-550k.in) entries)"
+fi
 
 log "Building benchmark runner..."
 cargo build --release
