@@ -1,7 +1,7 @@
 
 [[datasets]]
 name = "ecoli"
-lists = ["config/lists/ecoli.in"]
+lists = ["lists/ecoli.in"]
 
 [[datasets]]
 name = "human100"
@@ -13,7 +13,7 @@ tar = "/home/ad/turso/wrk-vakka/users/sebschmi/matchtigs/genomes/ghuman_pangenom
 
 [[datasets]]
 name = "salmonella-550k"
-lists = ["config/lists/salmonella-550k.in"]
+lists = ["lists/salmonella-550k.in"]
 
 [[datasets]]
 name = "ena-bacteria"
