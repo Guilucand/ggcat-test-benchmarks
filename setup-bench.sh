@@ -39,8 +39,8 @@ pushd building/
     [ -d bcalm ]       || git clone https://github.com/GATB/bcalm --recursive
     [ -d bifrost ]     || git clone https://github.com/pmelsted/bifrost
     [ -d bifrost-k63 ] || git clone https://github.com/pmelsted/bifrost bifrost-k63
-    [ -d cuttlefish2 ] || git clone https://github.com/COMBINE-lab/cuttlefish cuttlefish2
-    [ -d cuttlefish3 ] || git clone --branch cuttlefish3 https://github.com/COMBINE-lab/cuttlefish cuttlefish3
+    [ -d cuttlefish2 ] || { git clone https://github.com/COMBINE-lab/cuttlefish cuttlefish2 && patch_kmc_for_gcc13 cuttlefish2/patches/kmc_patch.diff; }
+    [ -d cuttlefish3 ] || { git clone --branch cuttlefish3 https://github.com/COMBINE-lab/cuttlefish cuttlefish3 && patch_kmc_for_gcc13 cuttlefish3/patches/kmc_patch.diff; }
 
     if [ ! -f ../tools/ggcat ]; then
         pushd ggcat/
