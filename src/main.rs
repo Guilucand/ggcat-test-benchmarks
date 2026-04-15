@@ -429,9 +429,7 @@ fn main() {
                     create_dir(&dataset_dir);
                     let min_k = *experiment.kvalues.iter().min().unwrap() as usize;
                     let filter_short = experiment.filter_short_sequences.unwrap_or(false);
-                    if filter_short {
-                        println!("filter-short-sequences enabled (min_k={})", min_k);
-                    }
+
 
                     let threads = if let Some(threads) = &args.threads {
                         threads.split(",").map(|t| t.parse().unwrap()).collect()
@@ -503,7 +501,6 @@ fn main() {
 
                                             entry.unpack(&dest_file).unwrap();
                                             if filter_short {
-                                                println!("  Filtering {}", dest_file.display());
                                                 filter_fasta_min_length(&dest_file, min_k);
                                             }
                                             input_files.push(dest_file);
@@ -529,7 +526,6 @@ fn main() {
                                             new_file.display()
                                         ));
                                         if filter_short {
-                                            println!("  Filtering {}", new_file.display());
                                             filter_fasta_min_length(&new_file, min_k);
                                         }
                                     }
