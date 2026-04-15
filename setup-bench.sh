@@ -3,6 +3,7 @@
 # KMC 3.2.1 is missing <stdexcept> in critical_error_handler.h and <cstdint> in kff_writer.h.
 patch_kmc_for_gcc13() {
     local patchfile="$1"
+    [ -f "$patchfile" ] || return 0  # no patch file, skip
     grep -q "stdexcept" "$patchfile" && return  # already patched
     cat >> "$patchfile" << 'PATCH'
 diff --git a/kmc_core/critical_error_handler.h b/kmc_core/critical_error_handler.h
