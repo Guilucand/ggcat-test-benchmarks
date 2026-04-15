@@ -347,7 +347,7 @@ copy-output = true
 [[benchmarks]]
 name = "ecoli-bench"
 datasets = ["ecoli"]
-tools = ["cuttlefish2-ref", "cuttlefish3-ref", "ggcat"]
+tools = ["cuttlefish2-ref", "cuttlefish3-ref", "ggcat1", "ggcat2"]
 working-dirs = ["bench-hdd"]
 copy-dataset = true
 kvalues = [27, 63]
@@ -360,7 +360,7 @@ copy-output = false
 [[benchmarks]]
 name = "human100-bench"
 datasets = ["human100"]
-tools = ["cuttlefish2-ref", "cuttlefish3-ref", "ggcat"]
+tools = ["cuttlefish2-ref", "cuttlefish3-ref", "ggcat1", "ggcat2"]
 working-dirs = ["bench-hdd"]
 copy-dataset = true
 kvalues = [27, 63]
@@ -373,7 +373,7 @@ copy-output = false
 [[benchmarks]]
 name = "human2505-bench"
 datasets = ["human2505"]
-tools = ["cuttlefish2-ref", "cuttlefish3-ref", "ggcat"]
+tools = ["cuttlefish2-ref", "cuttlefish3-ref", "ggcat1", "ggcat2"]
 working-dirs = ["bench-hdd"]
 copy-dataset = true
 kvalues = [27, 63]
@@ -386,7 +386,7 @@ copy-output = false
 [[benchmarks]]
 name = "salmonella-550k-bench"
 datasets = ["salmonella-550k"]
-tools = ["cuttlefish2-ref", "cuttlefish3-ref", "ggcat"]
+tools = ["cuttlefish2-ref", "cuttlefish3-ref", "ggcat1", "ggcat2"]
 working-dirs = ["bench-hdd"]
 copy-dataset = true
 kvalues = [27, 63]
@@ -399,7 +399,7 @@ copy-output = false
 [[benchmarks]]
 name = "ena-bacteria-bench"
 datasets = ["ena-bacteria"]
-tools = ["cuttlefish2-ref", "cuttlefish3-ref", "ggcat"]
+tools = ["cuttlefish2-ref", "cuttlefish3-ref", "ggcat1", "ggcat2"]
 working-dirs = ["bench-hdd"]
 copy-dataset = true
 kvalues = [27, 63]
@@ -412,7 +412,7 @@ copy-output = false
 [[benchmarks]]
 name = "all-the-bacteria-bench"
 datasets = ["all-the-bacteria"]
-tools = ["cuttlefish2-ref", "cuttlefish3-ref", "ggcat"]
+tools = ["cuttlefish2-ref", "cuttlefish3-ref", "ggcat1", "ggcat2"]
 working-dirs = ["bench-hdd"]
 copy-dataset = true
 kvalues = [27, 63]

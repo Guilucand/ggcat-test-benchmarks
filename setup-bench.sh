@@ -39,19 +39,31 @@ mkdir -p tools/
 
 pushd building/
 
-    [ -d ggcat ]       || git clone https://github.com/algbio/ggcat --recursive
+    [ -d ggcat1 ]      || git clone https://github.com/algbio/ggcat --recursive ggcat1
+    [ -d ggcat2 ]      || git clone https://github.com/algbio/ggcat --recursive ggcat2
     [ -d bcalm ]       || git clone https://github.com/GATB/bcalm --recursive
     [ -d bifrost ]     || git clone https://github.com/pmelsted/bifrost
     [ -d bifrost-k63 ] || git clone https://github.com/pmelsted/bifrost bifrost-k63
     [ -d cuttlefish2 ] || { git clone https://github.com/COMBINE-lab/cuttlefish cuttlefish2 && patch_kmc_for_gcc13 cuttlefish2/patches/kmc_patch.diff; }
     [ -d cuttlefish3 ] || { git clone --branch cuttlefish3 https://github.com/COMBINE-lab/cuttlefish cuttlefish3 && patch_kmc_for_gcc13 cuttlefish3/patches/kmc_patch.diff; }
 
-    if [ ! -f ../tools/ggcat ]; then
-        pushd ggcat/
+    if [ ! -f ../tools/ggcat1 ]; then
+        pushd ggcat1/
+            git fetch --tags
+            git checkout v1.1.1
+            # v1.1.1 depends on an older parallel-processor crate where Stat::from_reader
+            # was renamed to from_read; build without process-stats to avoid the conflict
+            cargo build --release
+            cp ./target/release/ggcat ../../tools/ggcat1 -f
+        popd
+    fi
+
+    if [ ! -f ../tools/ggcat2 ]; then
+        pushd ggcat2/
+            git checkout main
             git pull
-            git checkout dev
             cargo build --release --features "process-stats"
-            cp ./target/release/ggcat ../../tools/ggcat -f
+            cp ./target/release/ggcat ../../tools/ggcat2 -f
         popd
     fi
 

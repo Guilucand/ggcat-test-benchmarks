@@ -82,28 +82,38 @@ arguments = "-in <INPUT_FILES_LIST> -kmer-size <KVALUE> -nb-cores <THREADS> -abu
 
 [[tools]]
 name = "ggcat"
-path = "../tools/ggcat"
+path = "../tools/ggcat2"
 arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE>"
 
 [[tools]]
 name = "ggcat-colored"
-path = "../tools/ggcat"
+path = "../tools/ggcat2"
 arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --colors"
 
 [[tools]]
 name = "ggcat-query"
-path = "../tools/ggcat"
+path = "../tools/ggcat2"
 arguments = "query -k <KVALUE> -j <THREADS> <INPUT_GRAPH> <INPUT_QUERY> -t <TEMP_DIR> -o <OUTPUT_FILE>"
 
 [[tools]]
 name = "ggcat-query-colored"
-path = "../tools/ggcat"
+path = "../tools/ggcat2"
 arguments = "query -k <KVALUE> -j <THREADS> <INPUT_GRAPH> <INPUT_QUERY> -t <TEMP_DIR> -o <OUTPUT_FILE> --colors"
 
 [[tools]]
 name = "ggcat-ram"
-path = "../tools/ggcat"
+path = "../tools/ggcat2"
 arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> --prefer-memory"
+
+[[tools]]
+name = "ggcat1"
+path = "../tools/ggcat1"
+arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE>"
+
+[[tools]]
+name = "ggcat2"
+path = "../tools/ggcat2"
+arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE>"
 
 [[tools]]
 name = "cuttlefish3-ref"
