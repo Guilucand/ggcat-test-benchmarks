@@ -30,6 +30,9 @@ PATCH
 
 cargo build --release
 
+# System dependencies (cuttlefish3 branch requires liblz4-dev and nasm)
+apt-get install -y libbz2-dev autoconf liblz4-dev nasm 2>/dev/null || true
+
 mkdir -p building/
 mkdir -p tools/
 
