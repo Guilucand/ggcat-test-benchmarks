@@ -143,6 +143,39 @@ pub(crate) fn parse_toml<T: DeserializeOwned>(file: PathBuf) -> T {
     toml::from_str(&settings_text).unwrap()
 }
 
+/// Rewrite a FASTA file in-place, dropping any sequence shorter than `min_len` bases.
+fn filter_fasta_min_length(path: &Path, min_len: usize) {
+    let content = std::fs::read_to_string(path)
+        .unwrap_or_else(|_| panic!("Cannot read fasta file: {}", path.display()));
+
+    let mut out = String::new();
+    let mut header = "";
+    let mut seq = String::new();
+
+    let flush = |out: &mut String, header: &str, seq: &str| {
+        if !header.is_empty() && seq.len() >= min_len {
+            out.push_str(header);
+            out.push('\n');
+            out.push_str(seq);
+            out.push('\n');
+        }
+    };
+
+    for line in content.lines() {
+        if line.starts_with('>') {
+            flush(&mut out, header, &seq);
+            header = line;
+            seq.clear();
+        } else {
+            seq.push_str(line.trim());
+        }
+    }
+    flush(&mut out, header, &seq);
+
+    std::fs::write(path, out)
+        .unwrap_or_else(|_| panic!("Cannot write fasta file: {}", path.display()));
+}
+
 fn main() {
     let args: ExtendedCli = ExtendedCli::from_args();
 
@@ -394,6 +427,7 @@ fn main() {
                     let mut dataset_copied = false;
                     let dataset_dir = tmp_workdir.as_ref().join("dataset");
                     create_dir(&dataset_dir);
+                    let min_k = *experiment.kvalues.iter().min().unwrap() as usize;
 
                     let threads = if let Some(threads) = &args.threads {
                         threads.split(",").map(|t| t.parse().unwrap()).collect()
@@ -464,6 +498,7 @@ fn main() {
                                             let dest_file = dataset_dir.join(file_name);
 
                                             entry.unpack(&dest_file).unwrap();
+                                            filter_fasta_min_length(&dest_file, min_k);
                                             input_files.push(dest_file);
                                         }
                                     }
@@ -486,6 +521,7 @@ fn main() {
                                             file.display(),
                                             new_file.display()
                                         ));
+                                        filter_fasta_min_length(&new_file, min_k);
                                     }
 
                                     input_files = new_input_files
