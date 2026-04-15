@@ -118,5 +118,5 @@ arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LI
 [[tools]]
 name = "cuttlefish3-ref"
 path = "../tools/cuttlefish3"
-arguments = "build --ref -l <INPUT_FILES_LIST> -k <KVALUE> -o <OUTPUT_FILE> -w <TEMP_DIR>"
+arguments = "build --ref -t <THREADS> -l <INPUT_FILES_LIST> -k <KVALUE> -o <OUTPUT_FILE> -w <TEMP_DIR>"
 

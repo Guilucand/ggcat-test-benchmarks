@@ -108,15 +108,18 @@ pushd building/
         popd
     fi
 
-    if [ ! -f ../tools/cuttlefish3 ]; then
+    if [ ! -f ../tools/cuttlefish3-bin ]; then
         pushd cuttlefish3/
             git pull
             patch_kmc_for_gcc13 patches/kmc_patch.diff
             mkdir -p build && cd build
             cmake ..
             make -j
-            cp src/cuttlefish ../../../tools/cuttlefish3 -f
+            cp src/cuttlefish ../../../tools/cuttlefish3-bin -f
         popd
     fi
+    # Install wrapper script (always, so updates are picked up)
+    cp ../scripts/cuttlefish3-wrapper.sh ../tools/cuttlefish3
+    chmod +x ../tools/cuttlefish3
 
 popd
