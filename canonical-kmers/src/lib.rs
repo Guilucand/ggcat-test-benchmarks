@@ -7,7 +7,6 @@ use std::io;
 use std::io::{Read, Write};
 use std::iter::FromIterator;
 use std::path::Path;
-use std::process::exit;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 pub fn read_fasta_lines<'a, P>(
@@ -128,16 +127,18 @@ pub fn canonicalize(
     let ident_parser = Regex::new(r"^>(\d+)").unwrap();
     let link_parser = Regex::new(r"L:([+-]):(\d+):([+-])").unwrap();
 
+    let before = sequences.len();
+    sequences.retain(|(_, sequence, _, _, _, _)| sequence.as_bytes().len() >= k);
+    let skipped = before - sequences.len();
+    if skipped > 0 {
+        println!("Skipped {} sequences with length less than k={}", skipped, k);
+    }
+
     sequences.par_iter_mut().for_each(
         |(ident, sequence, links, original_index, flipped, circular)| {
             let str_bytes = sequence.as_bytes();
 
             total_kmers.fetch_add((str_bytes.len() - k + 1) as u64, Ordering::Relaxed);
-
-            if str_bytes.len() < k {
-                println!("Sequence: {} has length less than k, aborting!", sequence);
-                exit(1);
-            }
 
             if normalize_links {
                 let groups = ident_parser.captures(ident).unwrap();
@@ -273,4 +274,24 @@ pub fn canonicalize(
         sequences.len(),
         total_kmers.load(Ordering::Relaxed)
     );
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_skip_short_sequences() {
+        let input = "/tmp/test_skip_short.fa";
+        let output = "/tmp/test_skip_short_out.fa";
+        std::fs::write(input, ">seq1\nATCGATCGATCGATCGATCGATCGATCG\n>seq2_short\nAAATCATCCTCTCCAACGGCGC\n>seq3\nTTGCAATCGATCGATCGATCGATCGATCGATCG\n").unwrap();
+
+        canonicalize(input, output, 27, false);
+
+        let out = std::fs::read_to_string(output).unwrap();
+        // seq2_short (22 bp < 27) must be absent; seq1 and seq3 must be present
+        // normalize_links=false writes only sequence lines (no headers)
+        assert!(!out.contains("AAATCATCCTCTCCAACGGCGC"), "short sequence should be filtered");
+        assert_eq!(out.lines().count(), 2, "2 sequences = 2 sequence lines");
+    }
 }
