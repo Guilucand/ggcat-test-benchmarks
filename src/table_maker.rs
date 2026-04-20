@@ -377,6 +377,8 @@ pub fn make_table(args: TableMakerCli) {
 
             let duration_string = if args.seconds_time {
                 format!("{}h:{}m:{}s", hours, minutes, seconds)
+            } else if hours == 0 {
+                format!("{}m:{}s", minutes, seconds)
             } else {
                 format!("{}h:{}m", hours, minutes)
             };
