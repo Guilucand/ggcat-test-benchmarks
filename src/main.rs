@@ -23,7 +23,7 @@ use std::env::current_dir;
 use std::ffi::CString;
 use std::fs::{create_dir, create_dir_all, read_dir, remove_dir_all, File};
 use std::io::{BufRead, BufReader, Read, Write};
-use std::os::unix::fs::PermissionsExt;
+use std::os::unix::fs::{MetadataExt, PermissionsExt};
 use std::panic;
 use std::panic::resume_unwind;
 use std::path::{Path, PathBuf};
@@ -610,26 +610,56 @@ fn main() {
 
                                 let final_out_dir =
                                     outputs_dir.join(&format!("{}thr_out", base_name));
-                                create_dir_all(&final_out_dir).unwrap();
 
-                                if experiment.copy_output.unwrap_or(true) {
-                                    for file in read_dir(&out_dir).unwrap() {
-                                        let file = file.unwrap();
+                                let stage_res: std::io::Result<()> = (|| {
+                                    create_dir_all(&final_out_dir)?;
 
-                                        let name = file.file_name();
-                                        std::fs::copy(file.path(), final_out_dir.join(name))
-                                            .unwrap();
-                                        std::fs::remove_file(file.path()).unwrap();
+                                    if experiment.copy_output.unwrap_or(true) {
+                                        for file in read_dir(&out_dir)? {
+                                            let file = file?;
+                                            let name = file.file_name();
+                                            std::fs::copy(
+                                                file.path(),
+                                                final_out_dir.join(name),
+                                            )?;
+                                            std::fs::remove_file(file.path())?;
+                                        }
                                     }
-                                }
-                                remove_dir_all(&out_dir);
+                                    let _ = remove_dir_all(&out_dir);
 
-                                File::create(results_file)
-                                    .unwrap()
-                                    .write_all(
+                                    File::create(&results_file)?.write_all(
                                         serde_json::to_string_pretty(&results).unwrap().as_bytes(),
-                                    )
-                                    .unwrap();
+                                    )?;
+                                    Ok(())
+                                })();
+
+                                if let Err(e) = stage_res {
+                                    eprintln!(
+                                        "WARN: failed to stage outputs for {}: {}",
+                                        base_name, e
+                                    );
+                                    let probe: &Path = if final_out_dir.exists() {
+                                        &final_out_dir
+                                    } else {
+                                        &outputs_dir
+                                    };
+                                    match std::fs::metadata(probe) {
+                                        Ok(md) => eprintln!(
+                                            "  blocking path: {} owner uid={} gid={} mode={:o}",
+                                            probe.display(),
+                                            md.uid(),
+                                            md.gid(),
+                                            md.permissions().mode() & 0o7777,
+                                        ),
+                                        Err(e) => eprintln!(
+                                            "  stat of {} failed: {}",
+                                            probe.display(),
+                                            e
+                                        ),
+                                    }
+                                    eprintln!("  skipping this combo; pipeline continues");
+                                    continue;
+                                }
                             }
                         }
                     }
