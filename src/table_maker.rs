@@ -241,7 +241,7 @@ impl TableMaker {
                     for col_idx in 0..self.col_labels.len() {
                         row_content.push_str("&");
                         row_content.push_str(&format!(
-                            "\\cell{{{} ({})}}",
+                            "\\cell{{{} ({}) [{}]}}",
                             self.cells[row_idx][col_idx]
                                 .as_ref()
                                 .map(|x| x.0.clone())
@@ -249,6 +249,10 @@ impl TableMaker {
                             self.cells[row_idx][col_idx]
                                 .as_ref()
                                 .map(|x| x.1.as_ref().unwrap_or(&String::new()).clone())
+                                .unwrap_or(String::new()),
+                            self.cells[row_idx][col_idx]
+                                .as_ref()
+                                .map(|x| x.2.as_ref().unwrap_or(&String::new()).clone())
                                 .unwrap_or(String::new()),
                         ));
                     }
