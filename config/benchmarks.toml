@@ -427,3 +427,18 @@ min-multiplicity = 1
 max-memory = 16.0
 size-check-time = 2000
 copy-output = false
+
+
+[[benchmarks]]
+name = "salmonella-100k-bench"
+datasets = ["salmonella-100k"]
+tools = ["ggcat2-colored", "cuttlefish3-ref-colored", "ggcat2", "cuttlefish3-ref"]
+working-dirs = ["ssd"]
+copy-dataset = true
+filter-short-sequences = false
+kvalues = [27, 63]
+threads = [16]
+min-multiplicity = 1
+max-memory = 16.0
+size-check-time = 2000
+copy-output = false

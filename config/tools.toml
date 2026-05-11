@@ -120,3 +120,13 @@ name = "cuttlefish3-ref"
 path = "../tools/cuttlefish3"
 arguments = "build --ref -t <THREADS> -l <INPUT_FILES_LIST> -k <KVALUE> -o <OUTPUT_FILE> -w <TEMP_DIR>"
 
+
+[[tools]]
+name = "ggcat2-colored"
+path = "../tools/ggcat2"
+arguments = "build -k <KVALUE> -j <THREADS> -s <MULTIPLICITY> -l <INPUT_FILES_LIST> -t <TEMP_DIR> -o <OUTPUT_FILE> -c"
+
+[[tools]]
+name = "cuttlefish3-ref-colored"
+path = "../tools/cuttlefish3"
+arguments = "build --ref -t <THREADS> -l <INPUT_FILES_LIST> -k <KVALUE> -o <OUTPUT_FILE> -w <TEMP_DIR> --color"
