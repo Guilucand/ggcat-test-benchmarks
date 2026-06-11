@@ -255,13 +255,48 @@ impl Runner {
             .stdout(File::create(&parameters.log_file).unwrap())
             .stderr(File::create(parameters.log_file.with_extension("stderr")).unwrap());
 
-        // Put the child (and its descendants) in its own process group so we can
-        // kill the whole tree with killpg(...) if the timeout fires.
+        // Compute how many CPUs we will pin the tool to. We cap parallelism
+        // by setting CPU affinity in pre_exec, which is inherited by every
+        // thread/child the tool spawns and is enforced by the kernel —
+        // unlike cpulimit, which is unreliable against many-threaded tools.
+        let total_cpus = num_cpus::get();
+        let affinity_cpus = if parameters.enforce_threads {
+            Some(parameters.max_threads.min(total_cpus).max(1))
+        } else {
+            None
+        };
+        if let Some(n) = affinity_cpus {
+            println!(
+                "Pinning tool to CPUs 0..{} via sched_setaffinity (max_threads={}, host has {})",
+                n,
+                parameters.max_threads,
+                total_cpus
+            );
+        }
+
+        // pre_exec: put the child in its own process group (so killpg can
+        // reap the whole tree on timeout / Ctrl+C / panic) and optionally
+        // restrict its CPU affinity to enforce the thread budget.
         unsafe {
             use std::os::unix::process::CommandExt;
-            command_builder.pre_exec(|| {
+            command_builder.pre_exec(move || {
                 if libc::setpgid(0, 0) != 0 {
                     return Err(io::Error::last_os_error());
+                }
+                if let Some(n) = affinity_cpus {
+                    let mut cpuset: libc::cpu_set_t = std::mem::zeroed();
+                    libc::CPU_ZERO(&mut cpuset);
+                    for i in 0..n {
+                        libc::CPU_SET(i, &mut cpuset);
+                    }
+                    if libc::sched_setaffinity(
+                        0,
+                        std::mem::size_of::<libc::cpu_set_t>(),
+                        &cpuset,
+                    ) != 0
+                    {
+                        return Err(io::Error::last_os_error());
+                    }
                 }
                 Ok(())
             });
@@ -277,44 +312,6 @@ impl Runner {
 
         let is_finished = Arc::new(AtomicBool::new(false));
         let timed_out_flag = Arc::new(AtomicBool::new(false));
-
-        // Attach cpulimit to enforce the configured thread budget (as a CPU%
-        // cap of max_threads * 100, summed across the tool and its children).
-        // We spawn it AFTER the tool so the tool runs as a direct child of
-        // this process — preserving wait4's rusage and /proc-based memory
-        // polling against the real tool pid.
-        let cpulimit_child = if parameters.enforce_threads {
-            let limit_pct = (parameters.max_threads as u64).saturating_mul(100);
-            let spawn_res = std::process::Command::new("cpulimit")
-                .arg("-p")
-                .arg(command.id().to_string())
-                .arg("-l")
-                .arg(limit_pct.to_string())
-                .arg("-i")
-                .stdout(std::process::Stdio::null())
-                .stderr(std::process::Stdio::null())
-                .spawn();
-            match spawn_res {
-                Ok(c) => {
-                    println!(
-                        "Attached cpulimit to pid {} with limit {}% (max_threads={})",
-                        command.id(),
-                        limit_pct,
-                        parameters.max_threads
-                    );
-                    Some(c)
-                }
-                Err(e) => {
-                    eprintln!(
-                        "WARN: failed to spawn cpulimit for thread enforcement: {} (continuing without limit)",
-                        e
-                    );
-                    None
-                }
-            }
-        } else {
-            None
-        };
 
         let pid = command.id();
 
@@ -396,13 +393,6 @@ impl Runner {
         maximum_disk_usage_thread.join();
         if let Some(t) = timeout_thread {
             let _ = t.join();
-        }
-        if let Some(mut c) = cpulimit_child {
-            // cpulimit self-exits when the watched pid disappears, but kill
-            // explicitly to avoid leaving it running if the tool was killed
-            // by a signal and exit happened earlier than cpulimit noticed.
-            let _ = c.kill();
-            let _ = c.wait();
         }
         let timed_out = timed_out_flag.load(Ordering::Relaxed);
 
