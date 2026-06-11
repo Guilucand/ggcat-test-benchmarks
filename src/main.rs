@@ -101,6 +101,10 @@ struct Cli {
     exclude: Option<String>,
     #[structopt(long)]
     threads: Option<String>,
+    /// Keep the per-benchmark dataset copy directory after the run completes,
+    /// so subsequent invocations can reuse it (looks for a "completed" marker).
+    #[structopt(long)]
+    keep_dataset_copy: bool,
 }
 
 fn filter_options<T>(
@@ -425,8 +429,16 @@ fn main() {
                     }
 
                     let mut dataset_copied = false;
-                    let dataset_dir = tmp_workdir.as_ref().join("dataset");
-                    create_dir(&dataset_dir);
+                    let dataset_cache_root = working_path
+                        .parent()
+                        .map(|p| p.join(format!("{}-dataset-cache", working_dir.name)))
+                        .unwrap_or_else(|| {
+                            PathBuf::from(format!("{}-dataset-cache", working_dir.name))
+                        });
+                    let dataset_dir = dataset_cache_root.join(&dataset.name);
+                    let completed_marker = dataset_dir.join("completed");
+                    let keep_dataset_copy = args.keep_dataset_copy
+                        || experiment.keep_dataset_copy.unwrap_or(false);
                     let min_k = *experiment.kvalues.iter().min().unwrap() as usize;
                     let filter_short = experiment.filter_short_sequences.unwrap_or(false);
 
@@ -466,71 +478,122 @@ fn main() {
                                 }
 
                                 if !dataset_copied && experiment.copy_dataset {
-                                    println!(
-                                        "Copying dataset for bench: {}",
-                                        results_file.file_name().unwrap().to_str().unwrap()
-                                    );
-
-                                    dataset_copied = true;
-
-                                    if let Some(tarball) = &dataset.tar {
-                                        for entry in tar::Archive::new(File::open(tarball).unwrap())
-                                            .entries()
-                                            .unwrap()
-                                            .filter(|d| {
-                                                d.is_ok()
-                                                    && d.as_ref()
-                                                        .unwrap()
-                                                        .path()
-                                                        .unwrap()
-                                                        .extension()
-                                                        .is_some()
-                                            })
-                                            .take(
-                                                dataset
-                                                    .limit
-                                                    .map(|limit| limit - input_files.len())
-                                                    .unwrap_or(usize::MAX),
-                                            )
-                                        {
-                                            let mut entry = entry.unwrap();
-                                            let tmp_path = entry.path().unwrap();
-                                            let file_name = tmp_path.file_name().unwrap();
-
-                                            let dest_file = dataset_dir.join(file_name);
-
-                                            entry.unpack(&dest_file).unwrap();
-                                            if filter_short {
-                                                filter_fasta_min_length(&dest_file, min_k);
-                                            }
-                                            input_files.push(dest_file);
+                                    if completed_marker.exists() {
+                                        let cached: Vec<PathBuf> =
+                                            BufReader::new(File::open(&completed_marker).unwrap())
+                                                .lines()
+                                                .filter_map(|l| l.ok())
+                                                .map(|l| l.trim().to_string())
+                                                .filter(|l| !l.is_empty())
+                                                .map(PathBuf::from)
+                                                .collect();
+                                        let all_present =
+                                            !cached.is_empty() && cached.iter().all(|p| p.exists());
+                                        if all_present {
+                                            println!(
+                                                "Reusing cached dataset for {} ({} files at {})",
+                                                dataset.name,
+                                                cached.len(),
+                                                dataset_dir.display()
+                                            );
+                                            input_files = cached;
+                                            dataset_copied = true;
+                                        } else {
+                                            println!(
+                                                "Cached dataset at {} is incomplete, re-copying",
+                                                dataset_dir.display()
+                                            );
+                                            let _ = remove_dir_all(&dataset_dir);
                                         }
+                                    } else if dataset_dir.exists() {
+                                        println!(
+                                            "Partial dataset cache at {} (no completed marker), re-copying",
+                                            dataset_dir.display()
+                                        );
+                                        let _ = remove_dir_all(&dataset_dir);
                                     }
 
-                                    let mut new_input_files = Vec::new();
+                                    if !dataset_copied {
+                                        println!(
+                                            "Copying dataset for bench: {}",
+                                            results_file.file_name().unwrap().to_str().unwrap()
+                                        );
 
-                                    for file in input_files {
-                                        let name = Path::new(&file).file_name().unwrap();
-
-                                        let new_file = dataset_dir.join(name);
-                                        new_input_files.push(new_file.clone());
-
-                                        if new_file == file {
-                                            // Skip files already in dest dir
-                                            continue;
-                                        }
-
-                                        std::fs::copy(&file, &new_file).expect(&format!(
-                                            "Cannot copy file: {} to working dir {}",
-                                            file.display(),
-                                            new_file.display()
+                                        create_dir_all(&dataset_dir).expect(&format!(
+                                            "Cannot create dataset cache dir: {}",
+                                            dataset_dir.display()
                                         ));
-                                        if filter_short {
-                                            filter_fasta_min_length(&new_file, min_k);
-                                        }
-                                    }
 
-                                    input_files = new_input_files
+                                        if let Some(tarball) = &dataset.tar {
+                                            for entry in tar::Archive::new(File::open(tarball).unwrap())
+                                                .entries()
+                                                .unwrap()
+                                                .filter(|d| {
+                                                    d.is_ok()
+                                                        && d.as_ref()
+                                                            .unwrap()
+                                                            .path()
+                                                            .unwrap()
+                                                            .extension()
+                                                            .is_some()
+                                                })
+                                                .take(
+                                                    dataset
+                                                        .limit
+                                                        .map(|limit| limit - input_files.len())
+                                                        .unwrap_or(usize::MAX),
+                                                )
+                                            {
+                                                let mut entry = entry.unwrap();
+                                                let tmp_path = entry.path().unwrap();
+                                                let file_name = tmp_path.file_name().unwrap();
+
+                                                let dest_file = dataset_dir.join(file_name);
+
+                                                entry.unpack(&dest_file).unwrap();
+                                                if filter_short {
+                                                    filter_fasta_min_length(&dest_file, min_k);
+                                                }
+                                                input_files.push(dest_file);
+                                            }
+                                        }
+
+                                        let mut new_input_files = Vec::new();
+
+                                        for file in input_files {
+                                            let name = Path::new(&file).file_name().unwrap();
+
+                                            let new_file = dataset_dir.join(name);
+                                            new_input_files.push(new_file.clone());
+
+                                            if new_file == file {
+                                                // Skip files already in dest dir
+                                                continue;
+                                            }
+
+                                            std::fs::copy(&file, &new_file).expect(&format!(
+                                                "Cannot copy file: {} to working dir {}",
+                                                file.display(),
+                                                new_file.display()
+                                            ));
+                                            if filter_short {
+                                                filter_fasta_min_length(&new_file, min_k);
+                                            }
+                                        }
+
+                                        input_files = new_input_files;
+
+                                        let mut marker = File::create(&completed_marker).expect(
+                                            &format!(
+                                                "Cannot write completed marker: {}",
+                                                completed_marker.display()
+                                            ),
+                                        );
+                                        for f in &input_files {
+                                            writeln!(marker, "{}", f.display()).unwrap();
+                                        }
+                                        dataset_copied = true;
+                                    }
                                 }
 
                                 let temp_dir =
@@ -665,6 +728,15 @@ fn main() {
                     }
                     if keep_temp_dir {
                         std::mem::forget(tmp_workdir);
+                    }
+                    if experiment.copy_dataset && !keep_dataset_copy && dataset_dir.exists() {
+                        if let Err(e) = remove_dir_all(&dataset_dir) {
+                            eprintln!(
+                                "WARN: failed to remove dataset cache {}: {}",
+                                dataset_dir.display(),
+                                e
+                            );
+                        }
                     }
                 }
             }
