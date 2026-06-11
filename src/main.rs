@@ -105,6 +105,10 @@ struct Cli {
     /// so subsequent invocations can reuse it (looks for a "completed" marker).
     #[structopt(long)]
     keep_dataset_copy: bool,
+    /// Per-tool timeout = multiplier * longest successful runtime observed so far
+    /// in this invocation. The first tool runs without a timeout. Set to 0 to disable.
+    #[structopt(long, default_value = "3.0")]
+    timeout_multiplier: f64,
 }
 
 fn filter_options<T>(
@@ -367,6 +371,9 @@ fn main() {
                 exclude.as_ref().unwrap_or(&vec![]),
             );
 
+            let mut max_runtime: Option<Duration> = None;
+            let timeout_multiplier = args.timeout_multiplier;
+
             for dataset in datasets {
                 for working_dir in &working_dirs {
                     let working_dir = all_settings
@@ -627,6 +634,26 @@ fn main() {
                                 create_dir_all(&temp_dir);
                                 create_dir_all(&out_dir);
 
+                                let timeout = if timeout_multiplier > 0.0 {
+                                    max_runtime.map(|d| d.mul_f64(timeout_multiplier))
+                                } else {
+                                    None
+                                };
+                                if let Some(t) = timeout {
+                                    println!(
+                                        "Tool timeout for {} set to {:.1}s ({}x of {:.1}s)",
+                                        base_name,
+                                        t.as_secs_f64(),
+                                        timeout_multiplier,
+                                        max_runtime.unwrap().as_secs_f64()
+                                    );
+                                } else {
+                                    println!(
+                                        "Tool timeout for {} disabled (no prior runtime baseline)",
+                                        base_name
+                                    );
+                                }
+
                                 let results = Runner::run_tool(
                                     &base_dir,
                                     (*tool).clone(),
@@ -662,8 +689,17 @@ fn main() {
                                             dataset.query.clone(),
                                             dataset.colorfile.clone(),
                                         ),
+                                        timeout,
                                     },
                                 );
+
+                                if !results.timed_out {
+                                    let elapsed =
+                                        Duration::from_secs_f64(results.real_time_secs);
+                                    if max_runtime.map_or(true, |m| elapsed > m) {
+                                        max_runtime = Some(elapsed);
+                                    }
+                                }
 
                                 if !experiment.keep_temp.unwrap_or(false) {
                                     remove_dir_all(&temp_dir);

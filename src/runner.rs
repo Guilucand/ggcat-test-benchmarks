@@ -34,6 +34,7 @@ pub struct Parameters {
     pub memory_gb: Option<f64>,
     pub size_check_time: Duration,
     pub query_files: (Option<String>, Option<String>),
+    pub timeout: Option<Duration>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -49,6 +50,10 @@ pub struct RunResults {
     pub max_used_disk_gb: f64,
     pub output_file_sizes: Vec<(String, (u64, f64))>,
     pub has_completed: bool,
+    #[serde(default)]
+    pub timed_out: bool,
+    #[serde(default)]
+    pub timeout_secs: Option<f64>,
 }
 
 fn absolute_path(path: impl AsRef<Path>) -> io::Result<PathBuf> {
@@ -243,14 +248,28 @@ impl Runner {
                 .unwrap_or(());
         }
 
-        let mut command = std::process::Command::new(&tool_path)
+        let mut command_builder = std::process::Command::new(&tool_path);
+        command_builder
             .args(arguments.as_slice())
             .stdout(File::create(&parameters.log_file).unwrap())
-            .stderr(File::create(parameters.log_file.with_extension("stderr")).unwrap())
-            .spawn()
-            .unwrap();
+            .stderr(File::create(parameters.log_file.with_extension("stderr")).unwrap());
+
+        // Put the child (and its descendants) in its own process group so we can
+        // kill the whole tree with killpg(...) if the timeout fires.
+        unsafe {
+            use std::os::unix::process::CommandExt;
+            command_builder.pre_exec(|| {
+                if libc::setpgid(0, 0) != 0 {
+                    return Err(io::Error::last_os_error());
+                }
+                Ok(())
+            });
+        }
+
+        let mut command = command_builder.spawn().unwrap();
 
         let is_finished = Arc::new(AtomicBool::new(false));
+        let timed_out_flag = Arc::new(AtomicBool::new(false));
 
         let pid = command.id();
 
@@ -267,6 +286,31 @@ impl Runner {
 
         let maximum_disk_usage_thr = maximum_disk_usage.clone();
         let maximum_rss_usage_thr = maximum_rss_usage.clone();
+
+        let timeout_thread = parameters.timeout.map(|timeout| {
+            let is_finished_thr = is_finished.clone();
+            let timed_out_thr = timed_out_flag.clone();
+            let pgid = pid as i32;
+            std::thread::spawn(move || {
+                let started = Instant::now();
+                let poll = Duration::from_millis(500);
+                while !is_finished_thr.load(Ordering::Relaxed) {
+                    if started.elapsed() >= timeout {
+                        timed_out_thr.store(true, Ordering::Relaxed);
+                        eprintln!(
+                            "Tool exceeded timeout of {:.1}s, killing process group {}",
+                            timeout.as_secs_f64(),
+                            pgid
+                        );
+                        unsafe {
+                            libc::killpg(pgid, libc::SIGKILL);
+                        }
+                        return;
+                    }
+                    std::thread::sleep(poll);
+                }
+            })
+        });
 
         let maximum_disk_usage_thread = std::thread::spawn(move || {
             while !is_finished_thr.load(Ordering::Relaxed) {
@@ -304,6 +348,10 @@ impl Runner {
 
         is_finished.store(true, Ordering::Relaxed);
         maximum_disk_usage_thread.join();
+        if let Some(t) = timeout_thread {
+            let _ = t.join();
+        }
+        let timed_out = timed_out_flag.load(Ordering::Relaxed);
 
         let mut has_completed = false;
 
@@ -374,6 +422,8 @@ impl Runner {
                 .collect(),
 
             has_completed,
+            timed_out,
+            timeout_secs: parameters.timeout.map(|d| d.as_secs_f64()),
         }
     }
 }
