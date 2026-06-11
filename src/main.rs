@@ -378,6 +378,41 @@ fn main() {
             let mut max_runtime: Option<Duration> = None;
             let timeout_multiplier = args.timeout_multiplier;
 
+            // Seed the runtime baseline from any pre-existing result jsons in
+            // results_dir so reruns inherit prior tools' real_time_secs.
+            if let Ok(entries) = read_dir(&results_dir) {
+                let mut seeded = 0usize;
+                for entry in entries.filter_map(|e| e.ok()) {
+                    let path = entry.path();
+                    if path.extension().and_then(|e| e.to_str()) != Some("json") {
+                        continue;
+                    }
+                    let Ok(mut f) = File::open(&path) else { continue };
+                    let mut buf = String::new();
+                    if f.read_to_string(&mut buf).is_err() {
+                        continue;
+                    }
+                    let Ok(prior): Result<RunResults, _> = serde_json::from_str(&buf) else {
+                        continue;
+                    };
+                    if prior.timed_out {
+                        continue;
+                    }
+                    let elapsed = Duration::from_secs_f64(prior.real_time_secs);
+                    if max_runtime.map_or(true, |m| elapsed > m) {
+                        max_runtime = Some(elapsed);
+                    }
+                    seeded += 1;
+                }
+                if let Some(m) = max_runtime {
+                    println!(
+                        "Seeded timeout baseline from {} prior result file(s): {:.1}s",
+                        seeded,
+                        m.as_secs_f64()
+                    );
+                }
+            }
+
             for dataset in datasets {
                 for working_dir in &working_dirs {
                     let working_dir = all_settings
