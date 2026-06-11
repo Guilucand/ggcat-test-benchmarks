@@ -192,6 +192,7 @@ fn main() {
     let args: ExtendedCli = ExtendedCli::from_args();
 
     ctrlc::set_handler(|| {
+        crate::dir_cleanup::kill_current_child();
         panic!("Ctrl+C pressed, aborting!");
     })
     .unwrap();

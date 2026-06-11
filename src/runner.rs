@@ -269,6 +269,12 @@ impl Runner {
 
         let mut command = command_builder.spawn().unwrap();
 
+        // The pre_exec hook put the child in its own process group, so its
+        // pgid equals its pid. Register it so Ctrl+C / panic handlers can
+        // kill the whole tree, since the terminal SIGINT no longer reaches it.
+        let child_pgid = command.id() as i32;
+        crate::dir_cleanup::set_current_child_pgid(child_pgid);
+
         let is_finished = Arc::new(AtomicBool::new(false));
         let timed_out_flag = Arc::new(AtomicBool::new(false));
 
@@ -386,6 +392,7 @@ impl Runner {
         let total_seconds = start_time.elapsed().as_secs_f64();
 
         is_finished.store(true, Ordering::Relaxed);
+        crate::dir_cleanup::clear_current_child_pgid(child_pgid);
         maximum_disk_usage_thread.join();
         if let Some(t) = timeout_thread {
             let _ = t.join();

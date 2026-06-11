@@ -2,6 +2,31 @@ use parking_lot::lock_api::RawMutex;
 use parking_lot::Mutex;
 use std::fs::{create_dir_all, remove_dir_all};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicI32, Ordering};
+
+// pgid of the tool currently being supervised; 0 means none. Used so that
+// Ctrl+C / panic handlers can kill the whole child process tree even though
+// each child is placed in its own process group (so the terminal's SIGINT
+// does not reach it on its own).
+static CURRENT_CHILD_PGID: AtomicI32 = AtomicI32::new(0);
+
+pub fn set_current_child_pgid(pgid: i32) {
+    CURRENT_CHILD_PGID.store(pgid, Ordering::SeqCst);
+}
+
+pub fn clear_current_child_pgid(pgid: i32) {
+    let _ = CURRENT_CHILD_PGID.compare_exchange(pgid, 0, Ordering::SeqCst, Ordering::SeqCst);
+}
+
+pub fn kill_current_child() {
+    let pgid = CURRENT_CHILD_PGID.swap(0, Ordering::SeqCst);
+    if pgid > 0 {
+        eprintln!("Killing running tool process group {}", pgid);
+        unsafe {
+            libc::killpg(pgid, libc::SIGKILL);
+        }
+    }
+}
 
 pub struct DirGuard {
     path: PathBuf,
@@ -25,6 +50,7 @@ impl Drop for DirGuard {
 static TEMP_DIRS: Mutex<Vec<PathBuf>> = Mutex::const_new(RawMutex::INIT, Vec::new());
 
 pub fn remove_dirs_on_panic() {
+    kill_current_child();
     println!("Removing temp directories!");
     let mut tmp_dirs = TEMP_DIRS.lock();
     for dir in tmp_dirs.iter() {
