@@ -35,6 +35,7 @@ pub struct Parameters {
     pub size_check_time: Duration,
     pub query_files: (Option<String>, Option<String>),
     pub timeout: Option<Duration>,
+    pub enforce_threads: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -271,6 +272,44 @@ impl Runner {
         let is_finished = Arc::new(AtomicBool::new(false));
         let timed_out_flag = Arc::new(AtomicBool::new(false));
 
+        // Attach cpulimit to enforce the configured thread budget (as a CPU%
+        // cap of max_threads * 100, summed across the tool and its children).
+        // We spawn it AFTER the tool so the tool runs as a direct child of
+        // this process — preserving wait4's rusage and /proc-based memory
+        // polling against the real tool pid.
+        let cpulimit_child = if parameters.enforce_threads {
+            let limit_pct = (parameters.max_threads as u64).saturating_mul(100);
+            let spawn_res = std::process::Command::new("cpulimit")
+                .arg("-p")
+                .arg(command.id().to_string())
+                .arg("-l")
+                .arg(limit_pct.to_string())
+                .arg("-i")
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
+                .spawn();
+            match spawn_res {
+                Ok(c) => {
+                    println!(
+                        "Attached cpulimit to pid {} with limit {}% (max_threads={})",
+                        command.id(),
+                        limit_pct,
+                        parameters.max_threads
+                    );
+                    Some(c)
+                }
+                Err(e) => {
+                    eprintln!(
+                        "WARN: failed to spawn cpulimit for thread enforcement: {} (continuing without limit)",
+                        e
+                    );
+                    None
+                }
+            }
+        } else {
+            None
+        };
+
         let pid = command.id();
 
         let is_finished_thr = is_finished.clone();
@@ -350,6 +389,13 @@ impl Runner {
         maximum_disk_usage_thread.join();
         if let Some(t) = timeout_thread {
             let _ = t.join();
+        }
+        if let Some(mut c) = cpulimit_child {
+            // cpulimit self-exits when the watched pid disappears, but kill
+            // explicitly to avoid leaving it running if the tool was killed
+            // by a signal and exit happened earlier than cpulimit noticed.
+            let _ = c.kill();
+            let _ = c.wait();
         }
         let timed_out = timed_out_flag.load(Ordering::Relaxed);
 

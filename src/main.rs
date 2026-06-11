@@ -109,6 +109,10 @@ struct Cli {
     /// in this invocation. The first tool runs without a timeout. Set to 0 to disable.
     #[structopt(long, default_value = "3.0")]
     timeout_multiplier: f64,
+    /// Disable per-tool thread-count enforcement (which by default attaches
+    /// cpulimit to each spawned tool, capping aggregate CPU to max_threads cores).
+    #[structopt(long)]
+    no_thread_enforcement: bool,
 }
 
 fn filter_options<T>(
@@ -690,6 +694,7 @@ fn main() {
                                             dataset.colorfile.clone(),
                                         ),
                                         timeout,
+                                        enforce_threads: !args.no_thread_enforcement,
                                     },
                                 );
 
