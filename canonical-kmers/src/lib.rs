@@ -69,10 +69,11 @@ where
 
 fn rcb(base: u8) -> u8 {
     match base {
-        b'A' => b'T',
-        b'C' => b'G',
-        b'G' => b'C',
-        b'T' => b'A',
+        b'A' | b'a' => b'T',
+        b'C' | b'c' => b'G',
+        b'G' | b'g' => b'C',
+        b'T' | b't' => b'A',
+        b'N' | b'n' => b'N',
         _ => panic!("Unknown base {}!", base as char),
     }
 }
