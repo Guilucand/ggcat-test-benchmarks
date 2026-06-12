@@ -24,6 +24,9 @@ pub struct TableMakerCli {
     /// tools matching at least one pattern are included.
     #[structopt(long)]
     tools: Option<String>,
+    /// Invert --tools: keep only tools that match none of the patterns.
+    #[structopt(long)]
+    invert_tools: bool,
 }
 
 /// Match a bash-style glob with `*` (zero or more chars) and `?` (one char)
@@ -391,10 +394,18 @@ pub fn make_table(args: TableMakerCli) {
             .filter(|p| !p.is_empty())
             .collect()
     });
+    let invert_tools = args.invert_tools;
     let tool_matches = |tool: &str| -> bool {
         match &tool_patterns {
             None => true,
-            Some(pats) => pats.iter().any(|p| glob_match(p, tool)),
+            Some(pats) => {
+                let any = pats.iter().any(|p| glob_match(p, tool));
+                if invert_tools {
+                    !any
+                } else {
+                    any
+                }
+            }
         }
     };
 
