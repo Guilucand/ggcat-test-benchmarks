@@ -7,9 +7,9 @@ use cgroups_rs::cgroup_builder::*;
 use cgroups_rs::*;
 use serde::{Deserialize, Serialize};
 use std::cmp::min;
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::fs::File;
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader, Read, Write};
 use std::mem::MaybeUninit;
 use std::os::raw::c_int;
 use std::os::unix::raw::pid_t;
@@ -55,6 +55,8 @@ pub struct RunResults {
     pub timed_out: bool,
     #[serde(default)]
     pub timeout_secs: Option<f64>,
+    #[serde(default)]
+    pub deadlock_detected: bool,
 }
 
 fn absolute_path(path: impl AsRef<Path>) -> io::Result<PathBuf> {
@@ -77,6 +79,41 @@ fn get_dir_size(path: impl AsRef<Path>) -> u64 {
         }
     }
     dir_size
+}
+
+/// Sum cumulative CPU time (user + kernel) across every process whose pgrp
+/// equals `pgid`. Returns None if /proc cannot be enumerated at all.
+fn collect_pgid_cpu_time(pgid: i32) -> Option<Duration> {
+    let ticks_per_second = procfs::ticks_per_second().ok()?;
+    let mut total_ticks: u64 = 0;
+    for entry in std::fs::read_dir("/proc").ok()?.filter_map(|e| e.ok()) {
+        let name = entry.file_name();
+        let Some(name_str) = name.to_str() else { continue };
+        if name_str.parse::<u32>().is_err() {
+            continue;
+        }
+        let stat_path = entry.path().join("stat");
+        let mut file = match File::open(&stat_path) {
+            Ok(f) => f,
+            Err(_) => continue,
+        };
+        let mut buf = Vec::new();
+        if file.read_to_end(&mut buf).is_err() {
+            continue;
+        }
+        let stat = match procfs::process::Stat::from_reader(std::io::Cursor::new(buf)) {
+            Ok(s) => s,
+            Err(_) => continue,
+        };
+        if stat.pgrp == pgid {
+            total_ticks = total_ticks
+                .saturating_add(stat.utime)
+                .saturating_add(stat.stime);
+        }
+    }
+    Some(Duration::from_secs_f64(
+        total_ticks as f64 / ticks_per_second as f64,
+    ))
 }
 
 impl Runner {
@@ -312,6 +349,7 @@ impl Runner {
 
         let is_finished = Arc::new(AtomicBool::new(false));
         let timed_out_flag = Arc::new(AtomicBool::new(false));
+        let deadlock_detected_flag = Arc::new(AtomicBool::new(false));
 
         let pid = command.id();
 
@@ -354,6 +392,105 @@ impl Runner {
             })
         });
 
+        // Deadlock detection: kill the tool if its process tree averages less
+        // than 0.3 cores over the window below. Window = min(1h, timeout/2),
+        // falling back to 1h when no timeout is configured.
+        let deadlock_window: Duration = {
+            let half_timeout = parameters
+                .timeout
+                .map(|t| t / 2)
+                .unwrap_or(Duration::from_secs(3600));
+            Duration::from_secs(3600).min(half_timeout)
+        };
+        const DEADLOCK_CHECK_INTERVAL: Duration = Duration::from_secs(300);
+        const DEADLOCK_SUMMARY_INTERVAL: Duration = Duration::from_secs(7200);
+        const DEADLOCK_THRESHOLD_CORES: f64 = 0.3;
+
+        println!(
+            "Deadlock monitor armed for pgid {}: window {:.0}s, threshold {:.2} cores, check every {:.0}s",
+            child_pgid,
+            deadlock_window.as_secs_f64(),
+            DEADLOCK_THRESHOLD_CORES,
+            DEADLOCK_CHECK_INTERVAL.as_secs_f64(),
+        );
+
+        let deadlock_thread = {
+            let is_finished_thr = is_finished.clone();
+            let deadlock_flag_thr = deadlock_detected_flag.clone();
+            let pgid = child_pgid;
+            let window = deadlock_window;
+            std::thread::spawn(move || {
+                let start = Instant::now();
+                // (timestamp, cumulative cpu time of the process tree)
+                let mut history: VecDeque<(Instant, Duration)> = VecDeque::new();
+                if let Some(cpu) = collect_pgid_cpu_time(pgid) {
+                    history.push_back((start, cpu));
+                }
+                let mut last_summary = start;
+                let mut last_check = start;
+                let poll_step = Duration::from_secs(5);
+                loop {
+                    std::thread::sleep(poll_step);
+                    if is_finished_thr.load(Ordering::Relaxed) {
+                        return;
+                    }
+                    let now = Instant::now();
+
+                    if now.duration_since(last_summary) >= DEADLOCK_SUMMARY_INTERVAL {
+                        last_summary = now;
+                        if let Some(current_cpu) = collect_pgid_cpu_time(pgid) {
+                            let elapsed = now.duration_since(start).as_secs_f64().max(1e-3);
+                            let avg_cores = current_cpu.as_secs_f64() / elapsed;
+                            println!(
+                                "[deadlock-monitor] pgid {}: average CPU {:.2} cores over {:.0}s",
+                                pgid, avg_cores, elapsed
+                            );
+                        }
+                    }
+
+                    if now.duration_since(last_check) < DEADLOCK_CHECK_INTERVAL {
+                        continue;
+                    }
+                    last_check = now;
+                    let Some(current_cpu) = collect_pgid_cpu_time(pgid) else {
+                        continue;
+                    };
+                    history.push_back((now, current_cpu));
+
+                    // Keep the oldest sample that is still >= window old.
+                    // Drop earlier samples once the next-oldest also covers the window.
+                    while history.len() >= 2 {
+                        if now.duration_since(history[1].0) >= window {
+                            history.pop_front();
+                        } else {
+                            break;
+                        }
+                    }
+
+                    let anchor = *history.front().unwrap();
+                    let anchor_age = now.duration_since(anchor.0);
+                    if anchor_age >= window {
+                        let dcpu = current_cpu
+                            .as_secs_f64()
+                            - anchor.1.as_secs_f64();
+                        let dt = anchor_age.as_secs_f64();
+                        let avg_cores = if dt > 0.0 { dcpu / dt } else { 0.0 };
+                        if avg_cores < DEADLOCK_THRESHOLD_CORES {
+                            eprintln!(
+                                "[deadlock-monitor] DEADLOCK detected for pgid {}: {:.3} cores avg over {:.0}s (threshold {:.2}), killing process group",
+                                pgid, avg_cores, dt, DEADLOCK_THRESHOLD_CORES
+                            );
+                            deadlock_flag_thr.store(true, Ordering::Relaxed);
+                            unsafe {
+                                libc::killpg(pgid, libc::SIGKILL);
+                            }
+                            return;
+                        }
+                    }
+                }
+            })
+        };
+
         let maximum_disk_usage_thread = std::thread::spawn(move || {
             while !is_finished_thr.load(Ordering::Relaxed) {
                 maximum_disk_usage_thr.fetch_max(
@@ -394,7 +531,9 @@ impl Runner {
         if let Some(t) = timeout_thread {
             let _ = t.join();
         }
+        let _ = deadlock_thread.join();
         let timed_out = timed_out_flag.load(Ordering::Relaxed);
+        let deadlock_detected = deadlock_detected_flag.load(Ordering::Relaxed);
 
         let mut has_completed = false;
 
@@ -467,6 +606,7 @@ impl Runner {
             has_completed,
             timed_out,
             timeout_secs: parameters.timeout.map(|d| d.as_secs_f64()),
+            deadlock_detected,
         }
     }
 }
