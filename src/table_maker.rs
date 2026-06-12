@@ -474,9 +474,34 @@ pub fn make_table(args: TableMakerCli) {
                 },
             );
 
+            let total_output_bytes: u64 = results
+                .output_file_sizes
+                .iter()
+                .map(|(_, (b, _))| *b)
+                .sum();
+            let total_output_gb =
+                total_output_bytes as f64 / (1024.0 * 1024.0 * 1024.0);
+            let fasta_files: Vec<&String> = results
+                .output_file_sizes
+                .iter()
+                .filter_map(|(p, _)| if p.ends_with(".fa") { Some(p) } else { None })
+                .collect();
+
             println!(
-                "{} {} {} {} {} => {:#?}",
-                dataset, wdir, k, tool, threads, results
+                "{} {} K={} {} T={} => time={:.1}s, max_mem={:.2}GB, max_disk={:.2}GB, completed={}, timed_out={}, deadlock={}, total_output={:.2}GB, fasta_files={:#?}",
+                dataset,
+                wdir,
+                k,
+                tool,
+                threads,
+                results.real_time_secs,
+                results.max_memory_gb,
+                results.max_used_disk_gb,
+                results.has_completed,
+                results.timed_out,
+                results.deadlock_detected,
+                total_output_gb,
+                fasta_files,
             );
         }
 
