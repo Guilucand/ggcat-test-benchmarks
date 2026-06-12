@@ -3,6 +3,7 @@ use itertools::*;
 use std::borrow::Borrow;
 use std::cmp::max;
 use std::fs::File;
+use std::io::BufReader;
 use std::ops::Range;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
@@ -436,7 +437,8 @@ pub fn make_table(args: TableMakerCli) {
                 continue;
             }
 
-            let results: RunResults = serde_json::from_reader(File::open(&file).unwrap()).unwrap();
+            let results: RunResults =
+                serde_json::from_reader(BufReader::new(File::open(&file).unwrap())).unwrap();
 
             let hours = (results.real_time_secs / 3600.0) as usize;
             let minutes = ((results.real_time_secs / 60.0) % 60.0) as usize;
