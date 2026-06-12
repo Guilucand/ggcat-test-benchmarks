@@ -19,6 +19,41 @@ pub struct TableMakerCli {
     seconds_time: bool,
     #[structopt(long)]
     typst: bool,
+    /// Comma-separated bash-like glob patterns matched against the raw tool
+    /// name (e.g. "*colored*" or "ggcat,bifrost-colored"). When set, only
+    /// tools matching at least one pattern are included.
+    #[structopt(long)]
+    tools: Option<String>,
+}
+
+/// Match a bash-style glob with `*` (zero or more chars) and `?` (one char)
+/// against `text`. Anchored to the full string.
+fn glob_match(pattern: &str, text: &str) -> bool {
+    let pat: Vec<char> = pattern.chars().collect();
+    let txt: Vec<char> = text.chars().collect();
+    // Iterative backtracking matcher.
+    let (mut pi, mut ti) = (0usize, 0usize);
+    let (mut star_pi, mut star_ti): (Option<usize>, usize) = (None, 0);
+    while ti < txt.len() {
+        if pi < pat.len() && (pat[pi] == '?' || pat[pi] == txt[ti]) {
+            pi += 1;
+            ti += 1;
+        } else if pi < pat.len() && pat[pi] == '*' {
+            star_pi = Some(pi);
+            star_ti = ti;
+            pi += 1;
+        } else if let Some(sp) = star_pi {
+            pi = sp + 1;
+            star_ti += 1;
+            ti = star_ti;
+        } else {
+            return false;
+        }
+    }
+    while pi < pat.len() && pat[pi] == '*' {
+        pi += 1;
+    }
+    pi == pat.len()
 }
 
 struct TableMaker {
@@ -350,6 +385,19 @@ pub fn make_table(args: TableMakerCli) {
 
     let mut table_maker = TableMaker::new();
 
+    let tool_patterns: Option<Vec<String>> = args.tools.as_ref().map(|s| {
+        s.split(',')
+            .map(|p| p.trim().to_string())
+            .filter(|p| !p.is_empty())
+            .collect()
+    });
+    let tool_matches = |tool: &str| -> bool {
+        match &tool_patterns {
+            None => true,
+            Some(pats) => pats.iter().any(|p| glob_match(p, tool)),
+        }
+    };
+
     content.retain(|p| ParsedPath::from_path(p).is_some());
     content.sort_by_cached_key(|p| ParsedPath::from_path(p).unwrap());
 
@@ -370,6 +418,10 @@ pub fn make_table(args: TableMakerCli) {
             } = ParsedPath::from_path(&file).unwrap();
 
             if dataset != target_dataset {
+                continue;
+            }
+
+            if !tool_matches(&tool) {
                 continue;
             }
 
