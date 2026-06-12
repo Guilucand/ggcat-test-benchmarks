@@ -387,18 +387,27 @@ pub fn make_table(args: TableMakerCli) {
                 format!("{}h:{}m", hours, minutes)
             };
 
+            let status_label = if results.deadlock_detected {
+                Some("DLK")
+            } else if results.timed_out {
+                Some("TLE")
+            } else if !results.has_completed {
+                Some("crashed")
+            } else {
+                None
+            };
+
             table_maker.add_sample(
                 &remap(&dataset),
                 &k.to_string(),
                 &remap(&tool),
-                if results.has_completed {
-                    (
+                match status_label {
+                    None => (
                         duration_string,
                         Some(format!("{:.2}GB", results.max_memory_gb)),
                         Some(format!("{:.2}GB", results.max_used_disk_gb)),
-                    )
-                } else {
-                    ("crashed".to_string(), None, None)
+                    ),
+                    Some(label) => (label.to_string(), None, None),
                 },
             );
 
