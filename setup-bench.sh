@@ -41,6 +41,7 @@ pushd building/
 
     [ -d ggcat1 ]      || git clone https://github.com/algbio/ggcat --recursive ggcat1
     [ -d ggcat2 ]      || git clone https://github.com/algbio/ggcat --recursive ggcat2
+    [ -d ggcat2.0 ]    || git clone --branch v2.0.0 https://github.com/algbio/ggcat --recursive ggcat2.0
     [ -d bcalm ]       || git clone https://github.com/GATB/bcalm --recursive
     [ -d bifrost ]     || git clone https://github.com/pmelsted/bifrost
     [ -d bifrost-k63 ] || git clone https://github.com/pmelsted/bifrost bifrost-k63
@@ -64,6 +65,17 @@ pushd building/
             git pull
             cargo build --release --features "process-stats"
             cp ./target/release/ggcat ../../tools/ggcat2 -f
+        popd
+    fi
+
+    if [ ! -f ../tools/ggcat2.0 ]; then
+        pushd ggcat2.0/
+            git fetch --tags
+            # GGCAT version used in https://doi.org/10.1101/2025.02.02.636161
+            # (v2.0.0 resolves to 08ccdb672916150e52bada9637bd5cb98c17f247).
+            git checkout v2.0.0
+            cargo build --release --features "process-stats"
+            cp ./target/release/ggcat ../../tools/ggcat2.0 -f
         popd
     fi
 

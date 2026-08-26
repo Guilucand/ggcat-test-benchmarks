@@ -1,4 +1,28 @@
 
+[[benchmarks]]
+name = "dsb-test"
+datasets = ["bacteria-10", "bacteria-100", "bacteria-1k", "bacteria-5k", "bacteria-10k", "bacteria-50k"] #, "bacteria-100k"]
+tools = ["ggcat1", "ggcat2.0", "ggcat2", "cuttlefish3-ref"]
+working-dirs = ["ssd"]
+copy-dataset = false
+kvalues = [63, 27]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 2000
+copy-output = false
+
+[[benchmarks]]
+name = "dsb-test-et"
+datasets = ["bacteria-10", "bacteria-100", "bacteria-1k", "bacteria-5k", "bacteria-10k"] #, "bacteria-100k"]
+tools = ["ggcat-et", "ggcat2-et"]
+working-dirs = ["ssd"]
+copy-dataset = false
+kvalues = [63, 27]
+threads = [16]
+min-multiplicity = 1
+size-check-time = 2000
+copy-output = false
+
 
 [[benchmarks]]
 name = "article-test-a"

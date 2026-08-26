@@ -146,6 +146,23 @@ fn filter_options<T>(
         .collect()
 }
 
+fn is_feasible_timeout_run(has_completed: bool, timed_out: bool, deadlock_detected: bool) -> bool {
+    has_completed && !timed_out && !deadlock_detected
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_feasible_timeout_run;
+
+    #[test]
+    fn only_completed_runs_are_feasible_timeout_sources() {
+        assert!(is_feasible_timeout_run(true, false, false));
+        assert!(!is_feasible_timeout_run(false, false, false));
+        assert!(!is_feasible_timeout_run(true, true, false));
+        assert!(!is_feasible_timeout_run(true, false, true));
+    }
+}
+
 pub(crate) fn parse_toml<T: DeserializeOwned>(file: PathBuf) -> T {
     let mut settings_text = String::new();
     File::open(&file)
@@ -396,7 +413,11 @@ fn main() {
                     let Ok(prior): Result<RunResults, _> = serde_json::from_str(&buf) else {
                         continue;
                     };
-                    if prior.timed_out {
+                    if !is_feasible_timeout_run(
+                        prior.has_completed,
+                        prior.timed_out,
+                        prior.deadlock_detected,
+                    ) {
                         continue;
                     }
                     let elapsed = Duration::from_secs_f64(prior.real_time_secs);
@@ -675,13 +696,15 @@ fn main() {
                                 create_dir_all(&out_dir);
 
                                 let timeout = if timeout_multiplier > 0.0 {
-                                    max_runtime.map(|d| d.mul_f64(timeout_multiplier))
+                                    max_runtime.map(|d| {
+                                        Duration::from_secs(60).max(d.mul_f64(timeout_multiplier))
+                                    })
                                 } else {
                                     None
                                 };
                                 if let Some(t) = timeout {
                                     println!(
-                                        "Tool timeout for {} set to {:.1}s ({}x of {:.1}s)",
+                                        "Tool timeout for {} set to {:.1}s ({}x of {:.1}s, minimum 60.0s)",
                                         base_name,
                                         t.as_secs_f64(),
                                         timeout_multiplier,
@@ -734,9 +757,12 @@ fn main() {
                                     },
                                 );
 
-                                if !results.timed_out {
-                                    let elapsed =
-                                        Duration::from_secs_f64(results.real_time_secs);
+                                if is_feasible_timeout_run(
+                                    results.has_completed,
+                                    results.timed_out,
+                                    results.deadlock_detected,
+                                ) {
+                                    let elapsed = Duration::from_secs_f64(results.real_time_secs);
                                     if max_runtime.map_or(true, |m| elapsed > m) {
                                         max_runtime = Some(elapsed);
                                     }
