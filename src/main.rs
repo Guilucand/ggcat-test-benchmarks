@@ -150,9 +150,54 @@ fn is_feasible_timeout_run(has_completed: bool, timed_out: bool, deadlock_detect
     has_completed && !timed_out && !deadlock_detected
 }
 
+/// Return the files from a completed dataset cache.
+///
+/// `completed` indicates that all copies finished. Rebuild the input list from
+/// the actual (flat) cache directory instead of assuming the marker contains a
+/// manifest: an empty marker must not turn an already-copied dataset into an
+/// empty input list. The marker itself must never become an input.
+fn load_cached_dataset_files(
+    dataset_dir: &Path,
+    completed_marker: &Path,
+) -> std::io::Result<Option<Vec<PathBuf>>> {
+    if !completed_marker.is_file() {
+        return Ok(None);
+    }
+
+    let mut cached = Vec::new();
+    for entry in read_dir(dataset_dir)? {
+        let path = entry?.path();
+        if path != completed_marker && path.is_file() {
+            cached.push(path);
+        }
+    }
+    cached.sort();
+
+    if cached.is_empty() {
+        Ok(None)
+    } else {
+        Ok(Some(cached))
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::is_feasible_timeout_run;
+    use super::{is_feasible_timeout_run, load_cached_dataset_files};
+    use std::fs::{create_dir_all, remove_dir_all, File};
+    use std::io::Write;
+    use std::path::PathBuf;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn temp_test_dir(test_name: &str) -> PathBuf {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        std::env::temp_dir().join(format!(
+            "assemblers-benchmark-{test_name}-{}-{unique}",
+            std::process::id()
+        ))
+    }
 
     #[test]
     fn only_completed_runs_are_feasible_timeout_sources() {
@@ -160,6 +205,48 @@ mod tests {
         assert!(!is_feasible_timeout_run(false, false, false));
         assert!(!is_feasible_timeout_run(true, true, false));
         assert!(!is_feasible_timeout_run(true, false, true));
+    }
+
+    #[test]
+    fn empty_completion_marker_recovers_already_copied_files() {
+        let dataset_dir = temp_test_dir("empty-cache-marker");
+        create_dir_all(&dataset_dir).unwrap();
+        let completed_marker = dataset_dir.join("completed");
+        File::create(&completed_marker).unwrap();
+        let first = dataset_dir.join("first.fa");
+        let second = dataset_dir.join("second.fa");
+        File::create(&first).unwrap();
+        File::create(&second).unwrap();
+
+        let cached = load_cached_dataset_files(&dataset_dir, &completed_marker)
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(cached, vec![first, second]);
+        assert!(!cached.contains(&completed_marker));
+        remove_dir_all(dataset_dir).unwrap();
+    }
+
+    #[test]
+    fn completion_manifest_restores_its_file_list() {
+        let dataset_dir = temp_test_dir("cache-manifest");
+        create_dir_all(&dataset_dir).unwrap();
+        let completed_marker = dataset_dir.join("completed");
+        let input = dataset_dir.join("input.fa");
+        File::create(&input).unwrap();
+        writeln!(
+            File::create(&completed_marker).unwrap(),
+            "{}",
+            input.display()
+        )
+        .unwrap();
+
+        let cached = load_cached_dataset_files(&dataset_dir, &completed_marker)
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(cached, vec![input]);
+        remove_dir_all(dataset_dir).unwrap();
     }
 }
 
@@ -546,18 +633,19 @@ fn main() {
                                 }
 
                                 if !dataset_copied && experiment.copy_dataset {
-                                    if completed_marker.exists() {
-                                        let cached: Vec<PathBuf> =
-                                            BufReader::new(File::open(&completed_marker).unwrap())
-                                                .lines()
-                                                .filter_map(|l| l.ok())
-                                                .map(|l| l.trim().to_string())
-                                                .filter(|l| !l.is_empty())
-                                                .map(PathBuf::from)
-                                                .collect();
-                                        let all_present =
-                                            !cached.is_empty() && cached.iter().all(|p| p.exists());
-                                        if all_present {
+                                    if completed_marker.is_file() {
+                                        if let Some(cached) = load_cached_dataset_files(
+                                            &dataset_dir,
+                                            &completed_marker,
+                                        )
+                                        .unwrap_or_else(|error| {
+                                            eprintln!(
+                                                "Cannot read dataset cache marker {}: {}",
+                                                completed_marker.display(),
+                                                error
+                                            );
+                                            None
+                                        }) {
                                             println!(
                                                 "Reusing cached dataset for {} ({} files at {})",
                                                 dataset.name,

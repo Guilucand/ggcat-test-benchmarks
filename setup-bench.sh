@@ -29,6 +29,17 @@ diff --git a/kmc_core/kff_writer.h b/kmc_core/kff_writer.h
 PATCH
 }
 
+patch_cuttlefish3_streams() {
+    local source_dir="$1"
+    local patchfile="$2"
+
+    if git -C "$source_dir" apply --reverse --check "$patchfile" 2>/dev/null; then
+        return 0  # already patched
+    fi
+
+    git -C "$source_dir" apply "$patchfile"
+}
+
 cargo build --release
 
 # System dependencies (cuttlefish3 branch requires liblz4-dev and nasm)
@@ -47,6 +58,7 @@ pushd building/
     [ -d bifrost-k63 ] || git clone https://github.com/pmelsted/bifrost bifrost-k63
     [ -d cuttlefish2 ] || { git clone https://github.com/COMBINE-lab/cuttlefish cuttlefish2 && patch_kmc_for_gcc13 cuttlefish2/patches/kmc_patch.diff; }
     [ -d cuttlefish3 ] || { git clone --branch cuttlefish3 https://github.com/COMBINE-lab/cuttlefish cuttlefish3 && patch_kmc_for_gcc13 cuttlefish3/patches/kmc_patch.diff; }
+    patch_cuttlefish3_streams cuttlefish3 ../../patches/cuttlefish3_stream_close.patch
 
     if [ ! -f ../tools/ggcat1 ]; then
         pushd ggcat1/
